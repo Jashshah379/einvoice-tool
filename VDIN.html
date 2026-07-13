@@ -682,14 +682,16 @@ const SEED_COMPANIES = [
     state: "27",
     phone: "9820157451",
     email: "vamastock@yahoo.com",
-    // Extra fields used only by the printable "Performa Invoice" (not part of
-    // the e-invoice JSON schema) — taken from Vama's letterhead/sample invoice.
+    // Extra fields used only by the printable invoice (not part of the
+    // e-invoice JSON schema) — taken from Vama's letterhead/sample invoice.
+    invoiceTemplate: "vama",
     tagline: "Diamond Manufacturer | Importer | Exporter",
     bankAccName: "VAMA EXPORTS",
     bankAccNo: "121705500254",
     bankIfsc: "ICIC0001217",
     bankAddress: "ICICI Bank, BDB, BKC, Bandra (E), Mumbai - 400051",
-    jurisdictionNote: "GOODS SOLD & DELIVERED AT MUMBAI (SUBJECT TO MUMBAI JURISDICTION)"
+    jurisdictionNote: "GOODS SOLD & DELIVERED AT MUMBAI (SUBJECT TO MUMBAI JURISDICTION)",
+    signatoryTitle: "Authorized Signatory"
   },
   {
     id: "divine_jewels",
@@ -703,7 +705,16 @@ const SEED_COMPANIES = [
     pin: "400007",
     state: "27",
     phone: "9892244383",
-    email: "divinejewels2018@gmail.com"
+    email: "divinejewels2018@gmail.com",
+    // Extra fields used only by the printable invoice — taken from Divine's
+    // tax invoice sample (bank details, jurisdiction line, signatory title).
+    invoiceTemplate: "divine",
+    bankName: "ICICI Bank",
+    bankAccNo: "121705000863",
+    bankIfsc: "ICIC0001217",
+    bankAddress: "BDB, Bandra - East, Mumbai - 400051",
+    jurisdictionNote: "GOODS SOLD & DELIVERED AT MUMBAI. (SUBJECT TO MUMBAI JURISDICTION)",
+    signatoryTitle: "Proprietor"
   }
 ];
 
@@ -1507,7 +1518,17 @@ function restoreDraft() {
 function clearDraft() { localStorage.removeItem(DRAFT_KEY); }
 
 // ---------- printable invoice (separate from the machine-readable JSON) ----------
-function buildPrintableInvoiceHtml() {
+// Shared HTML/number-formatting helpers used by both invoice templates below.
+const escP = (s) => String(s || "").replace(/[&<>"']/g, (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[m]));
+const numP = (v) => { const n = parseFloat(v); return isNaN(n) || n === 0 ? "" : n.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 }); };
+const numAlwaysP = (v) => { const n = parseFloat(v) || 0; return n.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 }); };
+
+// Pulls together everything both printable-invoice layouts need, straight
+// from the same form fields used for the e-invoice JSON — nothing is
+// re-entered. Each company can have its own layout (see invoiceTemplate
+// below) since real letterheads differ invoice to invoice, business to
+// business.
+function gatherInvoiceData() {
   const g = (id) => ($(id) ? ($(id).value || "").trim() : "");
   const companies = loadCompanies();
   const selectedId = $("companyToggle") ? $("companyToggle").dataset.selected : "";
@@ -1517,22 +1538,9 @@ function buildPrintableInvoiceHtml() {
     const gg = (c) => tr.querySelector("." + c).value;
     return { sl: gg("f-slno") || String(i + 1), desc: gg("f-desc"), hsn: gg("f-hsn"), qty: gg("f-qty"), price: gg("f-price"), total: gg("f-total") };
   });
-  const esc = (s) => String(s || "").replace(/[&<>"']/g, (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[m]));
-  const num = (v) => { const n = parseFloat(v); return isNaN(n) || n === 0 ? "" : n.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 }); };
-  const numAlways = (v) => { const n = parseFloat(v) || 0; return n.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 }); };
 
   const totalQty = rows.reduce((s, r) => s + (parseFloat(r.qty) || 0), 0);
   const totalAmt = rows.reduce((s, r) => s + (parseFloat(r.total) || 0), 0);
-
-  const rowsHtml = rows.map((r) => `<tr>
-      <td class="c">${esc(r.sl)}</td>
-      <td>${esc(r.desc)}</td>
-      <td class="num">${esc(r.qty)}</td>
-      <td class="num">${numAlways(r.price)}</td>
-      <td class="num">${numAlways(r.total)}</td>
-    </tr>`).join("");
-  const blankRowsHtml = Array.from({ length: Math.max(0, 6 - rows.length) })
-    .map(() => `<tr><td>&nbsp;</td><td></td><td></td><td></td><td></td></tr>`).join("");
 
   const stateName = (MASTER.states.find((s) => String(s[1]) === g("SState")) || [""])[0];
   const sellerPan = panFromGstin(g("SGstin"));
@@ -1549,6 +1557,24 @@ function buildPrintableInvoiceHtml() {
   const halfRate = gstRate / 2;
 
   const amountWords = numberToWordsIndian(Math.round(totInv)) + " Rupees Only";
+
+  return { g, company, rows, totalQty, totalAmt, stateName, sellerPan, buyerPan, hsnCode, sgst, cgst, igst, totInv, gstRate, halfRate, amountWords };
+}
+
+// ---- Vama Exports template (Performa Invoice layout) ----
+function renderVamaInvoiceHtml(d) {
+  const { g, company, rows, totalQty, totalAmt, stateName, sellerPan, buyerPan, hsnCode, sgst, cgst, igst, totInv, gstRate, halfRate, amountWords } = d;
+  const esc = escP, num = numP, numAlways = numAlwaysP;
+
+  const rowsHtml = rows.map((r) => `<tr>
+      <td class="c">${esc(r.sl)}</td>
+      <td>${esc(r.desc)}</td>
+      <td class="num">${esc(r.qty)}</td>
+      <td class="num">${numAlways(r.price)}</td>
+      <td class="num">${numAlways(r.total)}</td>
+    </tr>`).join("");
+  const blankRowsHtml = Array.from({ length: Math.max(0, 6 - rows.length) })
+    .map(() => `<tr><td>&nbsp;</td><td></td><td></td><td></td><td></td></tr>`).join("");
 
   return `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Invoice ${esc(g("DocNo"))}</title>
   <style>
@@ -1671,7 +1697,7 @@ function buildPrintableInvoiceHtml() {
         <td style="width:55%;">SIGNATURE &amp; STAMP OF RECEIVER</td>
         <td style="width:45%;text-align:right;">
           For,<br><strong>${esc((company.tradeName || company.name || "").toUpperCase())}</strong><br><br><br>
-          AUTHORIZED SIGNATORY
+          ${esc(company.signatoryTitle || "Authorized Signatory")}
         </td>
       </tr>
     </table>
@@ -1679,6 +1705,156 @@ function buildPrintableInvoiceHtml() {
     <div class="foot-note">This is a plain print copy for your records — the official IRN and QR code are issued by the GST e-Invoice portal
     (einvoice1.gst.gov.in) once the JSON generated by this tool is uploaded there.</div>
   </body></html>`;
+}
+
+// ---- Divine Jewels template (Tax Invoice layout) ----
+// Differs from Vama's real layout: heading says "Tax Invoice", HSN sits
+// inside the description cell instead of a top summary line, no Due
+// Date/state-name text (state code only), tax breakdown is a compact
+// SUBTOTAL/CGST/SGST/IGST/TOTAL table, and the declaration paragraph
+// omits Vama's Russian-origin/WDC preamble.
+function renderDivineInvoiceHtml(d) {
+  const { g, company, rows, stateName, sellerPan, buyerPan, sgst, cgst, igst, totInv, gstRate, halfRate, amountWords } = d;
+  const esc = escP, numAlways = numAlwaysP;
+  const subtotal = (parseFloat($("valAssVal").textContent) || 0);
+
+  const rowsHtml = rows.map((r) => `<tr>
+      <td class="c">${esc(r.sl)}</td>
+      <td>${esc(r.desc)}${r.hsn ? `<br><span class="hsn">HSN CODE: ${esc(r.hsn)}</span>` : ""}</td>
+      <td class="num"></td>
+      <td class="num">${esc(r.qty)}</td>
+      <td class="num">${numAlways(r.price)}</td>
+      <td class="num">${numAlways(r.total)}</td>
+    </tr>`).join("");
+  const blankRowsHtml = Array.from({ length: Math.max(0, 4 - rows.length) })
+    .map(() => `<tr><td>&nbsp;</td><td></td><td></td><td></td><td></td><td></td></tr>`).join("");
+
+  return `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Invoice ${esc(g("DocNo"))}</title>
+  <style>
+    @page { margin: 18mm 14mm; }
+    body{font-family:Arial,Helvetica,sans-serif;color:#111;font-size:12px;margin:0;}
+    .letterhead-space{height:110px;}
+    table.frame{width:100%;border-collapse:collapse;border:1.5px solid #000;}
+    table.frame > tbody > tr > td{border:1px solid #000;vertical-align:top;padding:6px 8px;}
+    .hdr{text-align:center;font-weight:700;font-size:14px;letter-spacing:.03em;}
+    .meta-table{width:100%;border-collapse:collapse;font-size:11.5px;}
+    .meta-table td{border:none;padding:1px 0;}
+    .meta-table td.k{width:38%;font-weight:600;}
+    .pay-hdr{text-decoration:underline;font-weight:700;margin-top:10px;}
+    table.items{width:100%;border-collapse:collapse;font-size:11.5px;margin-top:0;}
+    table.items th,table.items td{border:1px solid #000;padding:4px 6px;text-align:left;}
+    table.items th{background:#f0f0f0;font-weight:700;}
+    table.items td.c{text-align:center;}
+    table.items td.num, table.items th.num{text-align:right;}
+    table.items .hsn{font-size:10px;color:#333;}
+    table.words-tax{width:100%;border-collapse:collapse;font-size:11.5px;margin-top:0;}
+    table.words-tax td{border:1px solid #000;padding:6px 8px;vertical-align:top;}
+    table.tax-mini{width:100%;border-collapse:collapse;}
+    table.tax-mini td{border:none;padding:2px 0;}
+    table.tax-mini td.amt{text-align:right;}
+    table.tax-mini tr.total td{font-weight:700;border-top:1px solid #000;}
+    .declaration{font-size:9.5px;color:#222;line-height:1.5;padding:8px;border:1px solid #000;border-top:none;}
+    table.sig{width:100%;border-collapse:collapse;font-size:11.5px;}
+    table.sig td{border:1px solid #000;border-top:none;padding:26px 8px 10px;vertical-align:bottom;}
+    .foot-note{margin-top:10px;font-size:9.5px;color:#666;}
+    @media print{ .letterhead-space{height:110px;} }
+  </style></head><body>
+    <div class="letterhead-space"></div>
+    <table class="frame">
+      <tr><td colspan="2" class="hdr">TAX INVOICE</td></tr>
+      <tr>
+        <td style="width:55%;">
+          <div style="font-weight:600;">To,</div>
+          <div style="font-weight:700;">${esc(g("BLglNm") || g("BTrdNm"))}</div>
+          ${g("BTrdNm") && g("BTrdNm") !== g("BLglNm") ? `<div>${esc(g("BTrdNm"))}</div>` : ""}
+          <div>${esc(g("BAddr1"))}${g("BAddr2") ? ", " + esc(g("BAddr2")) : ""}</div>
+          <div>${esc(g("BLoc"))}${g("BPin") ? " - " + esc(g("BPin")) : ""}</div>
+          <br>
+          <table class="meta-table">
+            <tr><td class="k">PAN NO:-</td><td>${esc(buyerPan)}</td></tr>
+            <tr><td class="k">GST NO:-</td><td>${esc(g("BGstin"))}</td></tr>
+            <tr><td class="k">TELE:-</td><td>${esc(g("BPh"))}</td></tr>
+          </table>
+        </td>
+        <td style="width:45%;">
+          <table class="meta-table">
+            <tr><td class="k">INVOICE NO :</td><td>${esc(g("DocNo"))}</td></tr>
+            <tr><td class="k">DATE:</td><td>${esc(g("DocDt"))}</td></tr>
+            <tr><td class="k">TERMS:</td><td>${esc(g("pTerms"))}</td></tr>
+            <tr><td colspan="2" style="font-weight:700;padding-top:4px;">${esc(g("pDelivery"))}</td></tr>
+            <tr><td class="k">PAN NO :</td><td>${esc(sellerPan)}</td></tr>
+            <tr><td class="k">GST NO:</td><td>${esc(g("SGstin"))}</td></tr>
+            <tr><td class="k">STATE CODE :</td><td>${esc(g("SState"))}</td></tr>
+          </table>
+          <div class="pay-hdr">PAYMENT INSTRUCTIONS :</div>
+          <div>${esc(company.bankName || "")}</div>
+          <div>${esc(company.bankAddress || "")}</div>
+          <div>A/C NO : ${esc(company.bankAccNo || "")}</div>
+          <div>IFSC NO : ${esc(company.bankIfsc || "")}</div>
+        </td>
+      </tr>
+    </table>
+
+    <table class="items">
+      <thead><tr>
+        <th class="c" style="width:7%;">SR.NO</th>
+        <th>DESCRIPTION</th>
+        <th class="num" style="width:11%;">AVG PCS PER CTS</th>
+        <th class="num" style="width:12%;">WEIGHT IN CTS</th>
+        <th class="num" style="width:14%;">RATE PER CTS</th>
+        <th class="num" style="width:16%;">TOTAL AMOUNT (RS)</th>
+      </tr></thead>
+      <tbody>${rowsHtml}${blankRowsHtml}</tbody>
+    </table>
+
+    <table class="words-tax">
+      <tr>
+        <td style="width:60%;">AMOUNT:- ${esc(amountWords.toUpperCase())}.</td>
+        <td style="width:40%;">
+          <table class="tax-mini">
+            <tr><td>SUBTOTAL</td><td class="amt">${numAlways(subtotal)}</td></tr>
+            <tr><td>CGST @ ${esc(String(halfRate))}%</td><td class="amt">${numAlways(cgst)}</td></tr>
+            <tr><td>SGST @ ${esc(String(halfRate))}%</td><td class="amt">${numAlways(sgst)}</td></tr>
+            <tr><td>IGST @ ${esc(String(gstRate))}%</td><td class="amt">${numAlways(igst)}</td></tr>
+            <tr class="total"><td>TOTAL</td><td class="amt">${numAlways(totInv)}</td></tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+
+    <div class="declaration">
+      The diamonds herein invoiced have been purchased from legitimate sources not involved in funding conflict and in compliance
+      with United Nations Resolutions. The seller hereby guarantees that these diamonds are conflict free based on personal
+      knowledge and/or written guarantees provided by the supplier of these diamonds. To the best of our knowledge and/or written
+      assurances from our suppliers we state that "diamonds herein invoiced have not been obtained in violation of applicable
+      national laws and/or sanctioned by the U.S. Department of Treasury's Office of Foreign Assets Control (OFAC) and have not
+      originated from the Marange Resources of Zimbabwe." "The diamonds herein invoiced are exclusively of natural origin and
+      untreated based on personal knowledge and/or written guarantees provided by the supplier of these diamonds. The acceptance of
+      goods herein invoiced will be as per the WFDB Guidelines." "I/We hereby certify that my/our registration certificate under the
+      Goods and Service Tax Act 2017 is in force on the date on which the sale of the goods specified in this tax invoice is made by
+      me/us and the transaction of sale covered by this tax invoice has been effected by me/us and it shall be accounted for in the
+      turnover of the sales while filing of return and due tax, if any, payable on the sale has been paid or shall be paid."<br><br>
+      ${esc(company.jurisdictionNote || "")}
+    </div>
+
+    <table class="sig">
+      <tr>
+        <td style="width:55%;">Receiver's Signature &amp; Stamp</td>
+        <td style="width:45%;text-align:right;">
+          For,<br><strong>${esc((company.tradeName || company.name || "").toUpperCase())}</strong><br><br><br>
+          ${esc(company.signatoryTitle || "Proprietor")}
+        </td>
+      </tr>
+    </table>
+
+    <div class="foot-note">This is a plain print copy for your records — the official IRN and QR code are issued by the GST e-Invoice portal
+    (einvoice1.gst.gov.in) once the JSON generated by this tool is uploaded there.</div>
+  </body></html>`;
+}
+
+function buildPrintableInvoiceHtml() {
+  const data = gatherInvoiceData();
+  return data.company.invoiceTemplate === "divine" ? renderDivineInvoiceHtml(data) : renderVamaInvoiceHtml(data);
 }
 
 function printInvoice() {
