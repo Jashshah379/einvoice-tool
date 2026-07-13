@@ -3,68 +3,63 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="dark">
 <title>e-Invoice JSON Generator</title>
 <style>
   :root{
-    --primary:#4f46e5; --primary-dark:#3730a3; --primary-light:#eef2ff;
-    --cyan:#0891b2; --teal:#0d9488; --amber:#b45309; --violet:#7c3aed;
-    --bg:#f4f5f9; --surface:#ffffff; --border:#e3e6ee;
-    --text:#111827; --muted:#6b7280; --success:#059669; --danger:#dc2626;
+    --primary:#6366f1; --primary-dark:#818cf8; --primary-light:rgba(99,102,241,.18);
+    --cyan:#22d3ee; --teal:#2dd4bf; --amber:#fbbf24; --violet:#a78bfa;
+    --bg:#0d0f14; --surface:#171a21; --surface-2:#1f232c; --border:#2b303c;
+    --text:#e7e9ee; --muted:#8b93a5; --success:#34d399; --danger:#f87171;
     --radius:12px; --radius-sm:8px;
-    --shadow:0 1px 2px rgba(16,24,40,.04),0 1px 3px rgba(16,24,40,.06);
-    --shadow-md:0 6px 20px rgba(16,24,40,.10);
+    --shadow:0 1px 2px rgba(0,0,0,.35),0 1px 3px rgba(0,0,0,.45);
+    --shadow-md:0 10px 30px rgba(0,0,0,.55);
   }
   *{box-sizing:border-box;}
   html{scroll-behavior:smooth;}
-  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--text);margin:0;padding:0;-webkit-font-smoothing:antialiased;}
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--text);margin:0;padding:0;-webkit-font-smoothing:antialiased;color-scheme:dark;}
 
-  header{background:linear-gradient(135deg,var(--primary) 0%,var(--primary-dark) 100%);color:#fff;padding:14px 22px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;position:sticky;top:0;z-index:60;box-shadow:0 2px 10px rgba(55,48,163,.25);}
-  .brand{display:flex;align-items:center;gap:12px;}
-  .brand .mark{width:38px;height:38px;border-radius:10px;background:rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;letter-spacing:-.02em;flex:none;}
-  header h1{font-size:17px;margin:0;font-weight:700;letter-spacing:-.01em;}
-  header .sub{font-size:12px;opacity:.82;font-weight:400;margin-top:1px;}
+  header{background:linear-gradient(135deg,var(--primary) 0%,var(--primary-dark) 100%);color:#fff;padding:16px 22px;display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:12px;position:sticky;top:0;z-index:60;box-shadow:0 2px 14px rgba(0,0,0,.45);}
   .company-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
-  .company-bar select{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.35);color:#fff;min-width:200px;}
-  .company-bar select option{color:#111;}
+  .company-toggle{display:flex;gap:10px;flex-wrap:wrap;}
+  .company-toggle-btn{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.3);color:#fff;padding:11px 24px;font-size:14.5px;font-weight:700;border-radius:999px;cursor:pointer;transition:background .15s,border-color .15s,transform .05s;}
+  .company-toggle-btn:hover{background:rgba(255,255,255,.16);}
+  .company-toggle-btn:active{transform:scale(.98);}
+  .company-toggle-btn.active{background:#fff;color:var(--primary-dark);border-color:#fff;}
 
-  select, input, textarea{font-family:inherit;font-size:13px;padding:8px 10px;border:1px solid var(--border);border-radius:var(--radius-sm);background:#fff;color:var(--text);transition:border-color .12s,box-shadow .12s;}
-  select:focus, input:focus, textarea:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(79,70,229,.15);}
-  button{font-family:inherit;font-size:13px;padding:8px 15px;border-radius:var(--radius-sm);border:1px solid var(--border);background:#fff;color:var(--text);cursor:pointer;font-weight:500;display:inline-flex;align-items:center;gap:6px;transition:background .12s,box-shadow .12s,transform .05s;}
-  button:hover{background:#f7f8fb;}
+  select, input, textarea{font-family:inherit;font-size:13px;padding:8px 10px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--surface-2);color:var(--text);transition:border-color .12s,box-shadow .12s;}
+  select:focus, input:focus, textarea:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(99,102,241,.25);}
+  button{font-family:inherit;font-size:13px;padding:8px 15px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--surface-2);color:var(--text);cursor:pointer;font-weight:500;display:inline-flex;align-items:center;gap:6px;transition:background .12s,box-shadow .12s,transform .05s;}
+  button:hover{background:#262b36;}
   button:active{transform:scale(.98);}
   button.primary{background:var(--primary);border-color:var(--primary);color:#fff;font-weight:600;}
   button.primary:hover{background:var(--primary-dark);}
-  button.success{background:var(--success);border-color:var(--success);color:#fff;font-weight:600;}
-  button.success:hover{background:#047857;}
-  button.danger{background:#fff;border-color:var(--danger);color:var(--danger);}
-  button.danger:hover{background:#fef2f2;}
-  button.ghost{background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.4);color:#fff;}
-  button.ghost:hover{background:rgba(255,255,255,.22);}
+  button.success{background:var(--success);border-color:var(--success);color:#052e21;font-weight:600;}
+  button.success:hover{background:#10b981;}
+  button.danger{background:var(--surface-2);border-color:var(--danger);color:var(--danger);}
+  button.danger:hover{background:rgba(248,113,113,.14);}
   button.small{padding:5px 10px;font-size:12px;}
 
   .app-shell{max-width:1440px;margin:0 auto;padding:22px 20px 90px;display:flex;gap:22px;align-items:flex-start;}
   .sidenav{width:216px;flex:none;position:sticky;top:82px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:10px;box-shadow:var(--shadow);max-height:calc(100vh - 100px);overflow-y:auto;}
   .sidenav a{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;font-size:12.5px;color:var(--muted);text-decoration:none;font-weight:500;margin-bottom:2px;}
-  .sidenav a .num{width:20px;height:20px;border-radius:50%;background:var(--primary-light);color:var(--primary);display:flex;align-items:center;justify-content:center;font-size:10.5px;font-weight:700;flex:none;}
   .sidenav a:hover{background:var(--primary-light);color:var(--primary-dark);}
   .sidenav a.active{background:var(--primary);color:#fff;}
-  .sidenav a.active .num{background:rgba(255,255,255,.28);color:#fff;}
   .sidenav a.nav-hidden{display:none;}
   .sidenav hr{border:none;border-top:1px solid var(--border);margin:8px 4px;}
 
   .content{flex:1;min-width:0;}
 
   .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:16px;overflow:hidden;box-shadow:var(--shadow);scroll-margin-top:80px;}
-  .card-head{padding:13px 18px;background:#fbfbfd;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none;}
+  .card-head{padding:13px 18px;background:var(--surface-2);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none;}
   .card-head h2{font-size:14px;margin:0;font-weight:700;color:var(--text);display:flex;align-items:center;gap:10px;}
-  .card-head h2 .num{width:24px;height:24px;border-radius:50%;background:var(--primary-light);color:var(--primary);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex:none;}
   .card-head .chevron{color:var(--muted);font-size:11px;transition:transform .15s;}
   .card.collapsed .chevron{transform:rotate(-90deg);}
   .card-body{padding:18px;}
   .card.collapsed .card-body{display:none;}
   .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;}
   details.more-options{margin-top:14px;}
-  details.more-options summary{cursor:pointer;font-size:12.5px;font-weight:600;color:var(--primary);list-style:none;user-select:none;}
+  details.more-options summary{cursor:pointer;font-size:12.5px;font-weight:600;color:var(--primary-dark);list-style:none;user-select:none;}
   details.more-options summary::-webkit-details-marker{display:none;}
   details.more-options summary::before{content:"▸ ";}
   details.more-options[open] summary::before{content:"▾ ";}
@@ -78,37 +73,36 @@
   /* toggle switches for the 10 invoice settings */
   .toggle-list{display:flex;flex-direction:column;gap:2px;}
   .toggle-row{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:11px 12px;border-radius:8px;}
-  .toggle-row:nth-child(even){background:#fafbfc;}
+  .toggle-row:nth-child(even){background:rgba(255,255,255,.03);}
   .toggle-row .q{font-size:13px;color:var(--text);}
-  .toggle-row .q .n{color:var(--primary);font-weight:700;margin-right:6px;}
   .switch{position:relative;display:inline-block;width:42px;height:24px;flex:none;}
   .switch input{opacity:0;width:0;height:0;position:absolute;}
-  .switch .track{position:absolute;inset:0;background:#d1d5db;border-radius:999px;transition:.2s;cursor:pointer;}
-  .switch .track:before{content:"";position:absolute;height:18px;width:18px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,.25);}
+  .switch .track{position:absolute;inset:0;background:#3a3f4c;border-radius:999px;transition:.2s;cursor:pointer;}
+  .switch .track:before{content:"";position:absolute;height:18px;width:18px;left:3px;top:3px;background:#e7e9ee;border-radius:50%;transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,.4);}
   .switch input:checked + .track{background:var(--primary);}
-  .switch input:checked + .track:before{transform:translateX(18px);}
+  .switch input:checked + .track:before{transform:translateX(18px);background:#fff;}
   .switch input:focus-visible + .track{outline:2px solid var(--primary);outline-offset:2px;}
 
   /* items table */
   .table-scroll{overflow-x:auto;border:1px solid var(--border);border-radius:var(--radius-sm);}
   table.items{width:100%;border-collapse:collapse;font-size:12px;min-width:1900px;}
-  table.items th{background:var(--primary-light);padding:8px 7px;text-align:left;font-weight:700;color:var(--primary-dark);white-space:nowrap;border-bottom:2px solid #dfe3fb;position:sticky;top:0;font-size:11px;text-transform:uppercase;letter-spacing:.02em;z-index:1;}
+  table.items th{background:var(--primary-light);padding:8px 7px;text-align:left;font-weight:700;color:var(--primary-dark);white-space:nowrap;border-bottom:2px solid rgba(99,102,241,.35);position:sticky;top:0;font-size:11px;text-transform:uppercase;letter-spacing:.02em;z-index:1;}
   table.items td{padding:3px;border-bottom:1px solid var(--border);vertical-align:top;}
-  table.items tbody tr:nth-child(even){background:#fafbfd;}
-  table.items tbody tr:hover{background:#f2f4ff;}
-  table.items input, table.items select{width:100%;min-width:70px;padding:5px 6px;font-size:12px;border-color:transparent;background:transparent;border-radius:6px;}
-  table.items input:hover, table.items select:hover{border-color:var(--border);background:#fff;}
-  table.items input:focus, table.items select:focus{border-color:var(--primary);background:#fff;}
+  table.items tbody tr:nth-child(even){background:rgba(255,255,255,.02);}
+  table.items tbody tr:hover{background:rgba(99,102,241,.1);}
+  table.items input, table.items select{width:100%;min-width:70px;padding:5px 6px;font-size:12px;border-color:transparent;background:transparent;color:var(--text);border-radius:6px;}
+  table.items input:hover, table.items select:hover{border-color:var(--border);background:var(--surface-2);}
+  table.items input:focus, table.items select:focus{border-color:var(--primary);background:var(--surface-2);}
   table.items.hide-isserv .col-isserv{display:none;}
   table.items.hide-bar .col-bar{display:none;}
   table.items.hide-freeqty .col-freeqty{display:none;}
   table.items.hide-batch .col-batch{display:none;}
-  .item-remove{background:#fff;border:1px solid var(--danger);color:var(--danger);border-radius:6px;padding:4px 9px;cursor:pointer;font-size:12px;line-height:1;}
-  .item-remove:hover{background:#fef2f2;}
+  .item-remove{background:var(--surface-2);border:1px solid var(--danger);color:var(--danger);border-radius:6px;padding:4px 9px;cursor:pointer;font-size:12px;line-height:1;}
+  .item-remove:hover{background:rgba(248,113,113,.14);}
 
   /* totals */
   .totals{display:flex;flex-wrap:wrap;gap:12px;margin-top:4px;}
-  .totals .box{background:#fafbfd;border:1px solid var(--border);border-left:4px solid var(--border);border-radius:var(--radius-sm);padding:11px 14px;min-width:150px;flex:1 1 150px;}
+  .totals .box{background:var(--surface-2);border:1px solid var(--border);border-left:4px solid var(--border);border-radius:var(--radius-sm);padding:11px 14px;min-width:150px;flex:1 1 150px;}
   .totals .box.b-taxable{border-left-color:var(--muted);}
   .totals .box.b-sgst{border-left-color:var(--cyan);}
   .totals .box.b-cgst{border-left-color:var(--teal);}
@@ -116,21 +110,21 @@
   .totals .box.b-cess{border-left-color:var(--amber);}
   .totals .box.b-total{border-left-color:var(--primary);background:var(--primary-light);flex:1 1 220px;}
   .totals .box .lbl{font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;font-weight:600;}
-  .totals .box .val{font-size:17px;font-weight:700;margin-top:3px;}
+  .totals .box .val{font-size:17px;font-weight:700;margin-top:3px;color:var(--text);}
   .totals .box.b-total .val{color:var(--primary-dark);font-size:19px;}
   .totals .box input{width:100px;margin-top:5px;}
 
   .actions-bar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;padding:16px 18px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);position:sticky;bottom:12px;box-shadow:var(--shadow-md);}
-  #errorBox{background:#fef2f2;border:1px solid #fecaca;color:var(--danger);padding:12px 16px;border-radius:var(--radius-sm);margin:0 0 14px;font-size:13px;display:none;}
+  #errorBox{background:rgba(248,113,113,.12);border:1px solid rgba(248,113,113,.4);color:var(--danger);padding:12px 16px;border-radius:var(--radius-sm);margin:0 0 14px;font-size:13px;display:none;}
   #errorBox ul{margin:6px 0 0 18px;padding:0;}
-  #successBox{background:#ecfdf5;border:1px solid #a7f3d0;color:var(--success);padding:11px 16px;border-radius:var(--radius-sm);margin:0 0 14px;font-size:13px;display:none;font-weight:600;}
+  #successBox{background:rgba(52,211,153,.12);border:1px solid rgba(52,211,153,.4);color:var(--success);padding:11px 16px;border-radius:var(--radius-sm);margin:0 0 14px;font-size:13px;display:none;font-weight:600;}
 
-  pre#jsonPreview{background:#0b1021;color:#c9d1d9;padding:16px;border-radius:var(--radius-sm);max-height:460px;overflow:auto;font-size:12px;white-space:pre-wrap;word-break:break-word;line-height:1.6;font-family:'SF Mono',Consolas,Monaco,monospace;margin:0;}
+  pre#jsonPreview{background:#0b0d13;color:#c9d1d9;padding:16px;border-radius:var(--radius-sm);max-height:460px;overflow:auto;font-size:12px;white-space:pre-wrap;word-break:break-word;line-height:1.6;font-family:'SF Mono',Consolas,Monaco,monospace;margin:0;border:1px solid var(--border);}
   .jk{color:#93c5fd;} .jstr{color:#86efac;} .jnum{color:#fbbf24;} .jbool{color:#f472b6;} .jnull{color:#94a3b8;font-style:italic;}
 
-  .modal-overlay{position:fixed;inset:0;background:rgba(15,23,42,.55);display:flex;align-items:center;justify-content:center;z-index:100;}
+  .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.65);display:flex;align-items:center;justify-content:center;z-index:100;}
   .modal-overlay.hidden{display:none;}
-  .modal{background:#fff;border-radius:var(--radius);width:min(640px,92vw);max-height:88vh;overflow:auto;padding:22px;box-shadow:var(--shadow-md);animation:modalIn .15s ease-out;}
+  .modal{background:var(--surface);color:var(--text);border:1px solid var(--border);border-radius:var(--radius);width:min(640px,92vw);max-height:88vh;overflow:auto;padding:22px;box-shadow:var(--shadow-md);animation:modalIn .15s ease-out;}
   @keyframes modalIn{from{opacity:0;transform:translateY(6px) scale(.98);}to{opacity:1;transform:none;}}
   .modal h3{margin-top:0;}
   .company-list-item{display:flex;justify-content:space-between;align-items:center;padding:9px 12px;border:1px solid var(--border);border-radius:8px;margin-bottom:7px;}
@@ -138,8 +132,8 @@
   .company-list-item .gstin{font-size:11.5px;color:var(--muted);margin-top:1px;}
 
   .pill{display:inline-block;padding:2px 9px;border-radius:999px;font-size:10.5px;font-weight:700;letter-spacing:.02em;}
-  .pill.on{background:#ecfdf5;color:var(--success);}
-  .pill.off{background:#f1f3f5;color:var(--muted);}
+  .pill.on{background:rgba(52,211,153,.16);color:var(--success);}
+  .pill.off{background:rgba(255,255,255,.08);color:var(--muted);}
   footer{text-align:center;font-size:12px;color:var(--muted);padding:22px;}
   .flex-between{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;}
   .hint{font-size:11.5px;color:var(--muted);}
@@ -154,66 +148,65 @@
 <body>
 
 <header>
-  <div class="brand">
-    <div class="mark">eINV</div>
-    <div>
-      <h1>e-Invoice JSON Generator</h1>
-      <div class="sub">Personal offline tool — generates IRP-schema e-invoice JSON, based on the GST Format-B utility</div>
-    </div>
-  </div>
   <div class="company-bar">
-    <select id="companySelect" style="min-width:220px;"></select>
-    <button class="ghost" id="btnManageCompanies">Manage companies</button>
-    <button class="ghost" id="btnCloudSync">Cloud sync</button>
+    <div class="company-toggle" id="companyToggle"></div>
   </div>
 </header>
 
 <div class="app-shell">
 
 <nav class="sidenav" id="sidenav">
-  <a href="#cardSettings"><span class="num">0</span> Settings</a>
+  <a href="#cardBuyer">Buyer</a>
+  <a href="#cardDoc">Document</a>
+  <a href="#cardSeller">Seller</a>
+  <a href="#cardSettings">Settings</a>
   <hr>
-  <a href="#cardDoc"><span class="num">1</span> Document</a>
-  <a href="#cardSeller"><span class="num">2</span> Seller</a>
-  <a href="#cardBuyer"><span class="num">3</span> Buyer</a>
-  <a href="#cardDispatch" data-optional="setDispatch"><span class="num">4</span> Dispatch</a>
-  <a href="#cardShipping" data-optional="setShipping"><span class="num">5</span> Shipping</a>
-  <a href="#cardItems"><span class="num">6</span> Items</a>
-  <a href="#cardValue"><span class="num">7</span> Value</a>
-  <a href="#cardExport" data-optional="setExport"><span class="num">8</span> Export</a>
-  <a href="#cardEwb" data-optional="setEwb"><span class="num">9</span> E-way Bill</a>
+  <a href="#cardDispatch" data-optional="setDispatch">Dispatch</a>
+  <a href="#cardShipping" data-optional="setShipping">Shipping</a>
+  <a href="#cardItems">Items</a>
+  <a href="#cardValue">Value</a>
+  <a href="#cardExport" data-optional="setExport">Export</a>
+  <a href="#cardEwb" data-optional="setEwb">E-way Bill</a>
   <hr>
-  <a href="#cardPreview"><span class="num">✓</span> JSON Preview</a>
+  <a href="#cardPreview">JSON Preview</a>
 </nav>
 
 <main class="content">
 
-<!-- INVOICE SETTINGS -->
-<div class="card collapsed" id="cardSettings">
-  <div class="card-head" data-toggle="cardSettings"><h2><span class="num">0</span> What do you need on this invoice?</h2><span class="chevron">▾</span></div>
+<div id="errorBox"></div>
+<div id="successBox"></div>
+
+<!-- BUYER -->
+<div class="card" id="cardBuyer">
+  <div class="card-head" data-toggle="cardBuyer"><h2>Buyer — select or add</h2><span class="chevron">▾</span></div>
   <div class="card-body">
-    <p class="muted-note">Everything defaults to "No" — matching a plain Regular / B2B invoice. Switch anything on only if you actually use it, and the matching fields/columns appear.</p>
-    <div class="toggle-list">
-      <div class="toggle-row"><span class="q"><span class="n">1</span>Reverse Charge applicable?</span><label class="switch"><input type="checkbox" id="setRevCharge"><span class="track"></span></label></div>
-      <div class="toggle-row"><span class="q"><span class="n">2</span>Sold via e-Commerce (GSTIN)?</span><label class="switch"><input type="checkbox" id="setEcomGstin"><span class="track"></span></label></div>
-      <div class="toggle-row"><span class="q"><span class="n">3</span>Dispatch from a different address?</span><label class="switch"><input type="checkbox" id="setDispatch"><span class="track"></span></label></div>
-      <div class="toggle-row"><span class="q"><span class="n">4</span>Ship to a different party/address?</span><label class="switch"><input type="checkbox" id="setShipping"><span class="track"></span></label></div>
-      <div class="toggle-row"><span class="q"><span class="n">5</span>Supply of service (Is_Service)?</span><label class="switch"><input type="checkbox" id="setIsService"><span class="track"></span></label></div>
-      <div class="toggle-row"><span class="q"><span class="n">6</span>Barcode on items?</span><label class="switch"><input type="checkbox" id="setBarcode"><span class="track"></span></label></div>
-      <div class="toggle-row"><span class="q"><span class="n">7</span>Free quantity on items?</span><label class="switch"><input type="checkbox" id="setFreeQty"><span class="track"></span></label></div>
-      <div class="toggle-row"><span class="q"><span class="n">8</span>Batch details on items?</span><label class="switch"><input type="checkbox" id="setBatch"><span class="track"></span></label></div>
-      <div class="toggle-row"><span class="q"><span class="n">9</span>Export details?</span><label class="switch"><input type="checkbox" id="setExport"><span class="track"></span></label></div>
-      <div class="toggle-row"><span class="q"><span class="n">10</span>E-way bill details?</span><label class="switch"><input type="checkbox" id="setEwb"><span class="track"></span></label></div>
+    <div class="flex-between" style="margin-bottom:12px;">
+      <div class="row-inline" style="display:flex;gap:8px;align-items:center;">
+        <select id="buyerSelect" style="min-width:220px;"><option value="">-- pick a saved buyer --</option></select>
+        <button class="small" id="btnSaveBuyer">Save this buyer</button>
+        <button class="small" id="btnManageBuyers">Manage buyers</button>
+      </div>
+      <div class="hint">Saved buyers stay in this browser, same as companies.</div>
+    </div>
+    <div class="grid">
+      <div class="field"><label>Buyer GSTIN <span class="req">*</span></label><input id="BGstin" maxlength="15" placeholder="or URP for unregistered"><div class="err"></div></div>
+      <div class="field"><label>Legal Name <span class="req">*</span></label><input id="BLglNm"><div class="err"></div></div>
+      <div class="field"><label>Trade Name</label><input id="BTrdNm"></div>
+      <div class="field"><label>Place Of Supply (state) <span class="req">*</span></label><select id="BPos"></select><div class="err"></div></div>
+      <div class="field"><label>Address 1 <span class="req">*</span></label><input id="BAddr1"><div class="err"></div></div>
+      <div class="field"><label>Address 2</label><input id="BAddr2"></div>
+      <div class="field"><label>Location <span class="req">*</span></label><input id="BLoc"><div class="err"></div></div>
+      <div class="field"><label>Pin Code</label><input id="BPin" maxlength="6"></div>
+      <div class="field"><label>State <span class="req">*</span></label><select id="BState"></select><div class="err"></div></div>
+      <div class="field"><label>Phone</label><input id="BPh" maxlength="12"></div>
+      <div class="field"><label>Email</label><input id="BEm"></div>
     </div>
   </div>
 </div>
 
-<div id="errorBox"></div>
-<div id="successBox"></div>
-
 <!-- DOCUMENT DETAILS -->
 <div class="card" id="cardDoc">
-  <div class="card-head" data-toggle="cardDoc"><h2><span class="num">1</span> Document Details</h2><span class="chevron">▾</span></div>
+  <div class="card-head" data-toggle="cardDoc"><h2>Document Details</h2><span class="chevron">▾</span></div>
   <div class="card-body">
     <div class="grid">
       <div class="field"><label>Document Type <span class="req">*</span></label>
@@ -245,7 +238,7 @@
 
 <!-- SELLER -->
 <div class="card collapsed" id="cardSeller">
-  <div class="card-head" data-toggle="cardSeller"><h2><span class="num">2</span> Seller Details <span class="pill on" id="sellerPill">from company profile</span></h2><span class="chevron">▾</span></div>
+  <div class="card-head" data-toggle="cardSeller"><h2>Seller Details <span class="pill on" id="sellerPill">from company profile</span></h2><span class="chevron">▾</span></div>
   <div class="card-body">
     <p class="muted-note">Pulled from the company selected above. Edit here if this invoice needs a one-off change (won't affect the saved profile).</p>
     <div class="grid">
@@ -263,37 +256,29 @@
   </div>
 </div>
 
-<!-- BUYER -->
-<div class="card collapsed" id="cardBuyer">
-  <div class="card-head" data-toggle="cardBuyer"><h2><span class="num">3</span> Buyer Details</h2><span class="chevron">▾</span></div>
+<!-- INVOICE SETTINGS -->
+<div class="card collapsed" id="cardSettings">
+  <div class="card-head" data-toggle="cardSettings"><h2>What do you need on this invoice?</h2><span class="chevron">▾</span></div>
   <div class="card-body">
-    <div class="flex-between" style="margin-bottom:12px;">
-      <div class="row-inline" style="display:flex;gap:8px;align-items:center;">
-        <select id="buyerSelect" style="min-width:220px;"><option value="">-- pick a saved buyer --</option></select>
-        <button class="small" id="btnSaveBuyer">Save this buyer</button>
-        <button class="small" id="btnManageBuyers">Manage buyers</button>
-      </div>
-      <div class="hint">Saved buyers stay in this browser, same as companies.</div>
-    </div>
-    <div class="grid">
-      <div class="field"><label>Buyer GSTIN <span class="req">*</span></label><input id="BGstin" maxlength="15" placeholder="or URP for unregistered"><div class="err"></div></div>
-      <div class="field"><label>Legal Name <span class="req">*</span></label><input id="BLglNm"><div class="err"></div></div>
-      <div class="field"><label>Trade Name</label><input id="BTrdNm"></div>
-      <div class="field"><label>Place Of Supply (state) <span class="req">*</span></label><select id="BPos"></select><div class="err"></div></div>
-      <div class="field"><label>Address 1 <span class="req">*</span></label><input id="BAddr1"><div class="err"></div></div>
-      <div class="field"><label>Address 2</label><input id="BAddr2"></div>
-      <div class="field"><label>Location <span class="req">*</span></label><input id="BLoc"><div class="err"></div></div>
-      <div class="field"><label>Pin Code</label><input id="BPin" maxlength="6"></div>
-      <div class="field"><label>State <span class="req">*</span></label><select id="BState"></select><div class="err"></div></div>
-      <div class="field"><label>Phone</label><input id="BPh" maxlength="12"></div>
-      <div class="field"><label>Email</label><input id="BEm"></div>
+    <p class="muted-note">Everything defaults to "No" — matching a plain Regular / B2B invoice. Switch anything on only if you actually use it, and the matching fields/columns appear.</p>
+    <div class="toggle-list">
+      <div class="toggle-row"><span class="q">Reverse Charge applicable?</span><label class="switch"><input type="checkbox" id="setRevCharge"><span class="track"></span></label></div>
+      <div class="toggle-row"><span class="q">Sold via e-Commerce (GSTIN)?</span><label class="switch"><input type="checkbox" id="setEcomGstin"><span class="track"></span></label></div>
+      <div class="toggle-row"><span class="q">Dispatch from a different address?</span><label class="switch"><input type="checkbox" id="setDispatch"><span class="track"></span></label></div>
+      <div class="toggle-row"><span class="q">Ship to a different party/address?</span><label class="switch"><input type="checkbox" id="setShipping"><span class="track"></span></label></div>
+      <div class="toggle-row"><span class="q">Supply of service (Is_Service)?</span><label class="switch"><input type="checkbox" id="setIsService"><span class="track"></span></label></div>
+      <div class="toggle-row"><span class="q">Barcode on items?</span><label class="switch"><input type="checkbox" id="setBarcode"><span class="track"></span></label></div>
+      <div class="toggle-row"><span class="q">Free quantity on items?</span><label class="switch"><input type="checkbox" id="setFreeQty"><span class="track"></span></label></div>
+      <div class="toggle-row"><span class="q">Batch details on items?</span><label class="switch"><input type="checkbox" id="setBatch"><span class="track"></span></label></div>
+      <div class="toggle-row"><span class="q">Export details?</span><label class="switch"><input type="checkbox" id="setExport"><span class="track"></span></label></div>
+      <div class="toggle-row"><span class="q">E-way bill details?</span><label class="switch"><input type="checkbox" id="setEwb"><span class="track"></span></label></div>
     </div>
   </div>
 </div>
 
 <!-- DISPATCH -->
 <div class="card" id="cardDispatch" style="display:none;">
-  <div class="card-head" data-toggle="cardDispatch"><h2><span class="num">4</span> Dispatch Details</h2><span class="chevron">▾</span></div>
+  <div class="card-head" data-toggle="cardDispatch"><h2>Dispatch Details</h2><span class="chevron">▾</span></div>
   <div class="card-body">
     <div class="grid" id="dispatchFields">
       <div class="field"><label>Name</label><input id="DName"></div>
@@ -308,7 +293,7 @@
 
 <!-- SHIPPING -->
 <div class="card" id="cardShipping" style="display:none;">
-  <div class="card-head" data-toggle="cardShipping"><h2><span class="num">5</span> Shipping Details</h2><span class="chevron">▾</span></div>
+  <div class="card-head" data-toggle="cardShipping"><h2>Shipping Details</h2><span class="chevron">▾</span></div>
   <div class="card-body">
     <div class="grid" id="shippingFields">
       <div class="field"><label>GSTIN</label><input id="ShGstin" maxlength="15"></div>
@@ -325,7 +310,7 @@
 
 <!-- ITEMS -->
 <div class="card" id="cardItems">
-  <div class="card-head" data-toggle="cardItems"><h2><span class="num">6</span> Item List</h2><span class="chevron">▾</span></div>
+  <div class="card-head" data-toggle="cardItems"><h2>Item List</h2><span class="chevron">▾</span></div>
   <div class="card-body">
     <div class="flex-between" style="margin-bottom:10px;">
       <button class="primary small" id="btnAddItem">+ Add item</button>
@@ -352,7 +337,7 @@
 
 <!-- VALUE DETAILS -->
 <div class="card collapsed" id="cardValue">
-  <div class="card-head" data-toggle="cardValue"><h2><span class="num">7</span> Value Details</h2><span class="chevron">▾</span></div>
+  <div class="card-head" data-toggle="cardValue"><h2>Value Details</h2><span class="chevron">▾</span></div>
   <div class="card-body">
     <p class="muted-note">Auto-summed from the item list. Discount / other charges / round-off can be adjusted manually — Total Invoice Value recalculates.</p>
     <div class="totals">
@@ -372,7 +357,7 @@
 
 <!-- EXPORT DETAILS -->
 <div class="card" id="cardExport" style="display:none;">
-  <div class="card-head" data-toggle="cardExport"><h2><span class="num">8</span> Export Details</h2><span class="chevron">▾</span></div>
+  <div class="card-head" data-toggle="cardExport"><h2>Export Details</h2><span class="chevron">▾</span></div>
   <div class="card-body">
     <div class="grid" id="exportFields">
       <div class="field"><label>Shipping Bill No</label><input id="ShipBNo"></div>
@@ -388,7 +373,7 @@
 
 <!-- E-WAY BILL -->
 <div class="card" id="cardEwb" style="display:none;">
-  <div class="card-head" data-toggle="cardEwb"><h2><span class="num">9</span> E-way Bill Details</h2><span class="chevron">▾</span></div>
+  <div class="card-head" data-toggle="cardEwb"><h2>E-way Bill Details</h2><span class="chevron">▾</span></div>
   <div class="card-body">
     <div class="grid" id="ewbFields">
       <div class="field"><label>Transporter ID (GSTIN)</label><input id="TransId" maxlength="15"></div>
@@ -414,7 +399,7 @@
 </div>
 
 <div class="card" id="cardPreview" style="margin-top:16px;">
-  <div class="card-head" data-toggle="cardPreview"><h2><span class="num">✓</span> JSON Preview</h2><span class="chevron">▾</span></div>
+  <div class="card-head" data-toggle="cardPreview"><h2>JSON Preview</h2><span class="chevron">▾</span></div>
   <div class="card-body">
     <pre id="jsonPreview">Click "Validate" or "Generate &amp; download JSON" to see the output here.</pre>
     <div class="muted-note" style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border);">
@@ -451,57 +436,6 @@
   <option value="71042010" label="Lab-grown diamond — rough/unworked">
   <option value="71049010" label="Lab-grown diamond — cut/polished (worked)">
 </datalist>
-
-<!-- MANAGE COMPANIES MODAL -->
-<div class="modal-overlay hidden" id="companyModalOverlay">
-  <div class="modal">
-    <h3>Manage companies</h3>
-    <div id="companyListWrap"></div>
-    <hr style="border:none;border-top:1px solid var(--border);margin:14px 0;">
-    <h3 id="companyFormTitle" style="font-size:14px;">Add a company</h3>
-    <input type="hidden" id="companyEditId">
-    <div class="grid">
-      <div class="field"><label>Display name (for the dropdown)</label><input id="cName" placeholder="e.g. My Trading Co"></div>
-      <div class="field"><label>GSTIN</label><input id="cGstin" maxlength="15"></div>
-      <div class="field"><label>Legal Name</label><input id="cLegal"></div>
-      <div class="field"><label>Trade Name</label><input id="cTrade"></div>
-      <div class="field"><label>Address 1</label><input id="cAddr1"></div>
-      <div class="field"><label>Address 2</label><input id="cAddr2"></div>
-      <div class="field"><label>Location</label><input id="cLoc"></div>
-      <div class="field"><label>Pin Code</label><input id="cPin" maxlength="6"></div>
-      <div class="field"><label>State</label><select id="cState"></select></div>
-      <div class="field"><label>Phone</label><input id="cPhone" maxlength="12"></div>
-      <div class="field"><label>Email</label><input id="cEmail"></div>
-    </div>
-    <div style="margin-top:14px;display:flex;gap:10px;justify-content:flex-end;">
-      <button id="btnCloseCompanyModal">Close</button>
-      <button class="primary" id="btnSaveCompany">Save company</button>
-    </div>
-  </div>
-</div>
-
-<!-- CLOUD SYNC MODAL -->
-<div class="modal-overlay hidden" id="cloudModalOverlay">
-  <div class="modal">
-    <h3>Cloud sync (via your own Google Sheet)</h3>
-    <p class="muted-note">
-      Saves/loads your companies &amp; buyers to a Google Sheet you control, so they follow you across devices.
-      Requires a one-time setup (Apps Script + deployment) — see the setup guide provided alongside this tool.
-      Nothing is sent anywhere else.
-    </p>
-    <div class="grid">
-      <div class="field" style="grid-column:1 / -1;"><label>Web App URL (ends in /exec)</label><input id="cloudUrl" placeholder="https://script.google.com/macros/s/XXXXX/exec"></div>
-      <div class="field"><label>Passphrase</label><input id="cloudPass" type="password"></div>
-    </div>
-    <div id="cloudStatus" class="muted-note" style="margin-top:8px;"></div>
-    <div style="margin-top:14px;display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;">
-      <button id="btnCloudSaveSettings">Save settings</button>
-      <button id="btnCloudPull">Pull from cloud (overwrites this device)</button>
-      <button class="primary" id="btnCloudPush">Push to cloud (overwrites the sheet)</button>
-      <button id="btnCloseCloudModal">Close</button>
-    </div>
-  </div>
-</div>
 
 <!-- MANAGE BUYERS MODAL -->
 <div class="modal-overlay hidden" id="buyerModalOverlay">
@@ -685,23 +619,42 @@ function markSeedDismissed(id) {
   if (!dismissed.includes(id)) { dismissed.push(id); localStorage.setItem(SEED_DISMISSED_KEY, JSON.stringify(dismissed)); }
 }
 
+// Company picker is two (or more) simple toggle buttons instead of a dropdown —
+// there are only ever a couple of companies in practice, so a toggle is faster
+// than opening a select. $("companyToggle") holds the currently-selected id in
+// its data-selected attribute.
 function refreshCompanySelect() {
   const companies = loadCompanies();
-  const sel = $("companySelect");
-  const prev = sel.value;
-  sel.innerHTML = "";
+  const wrap = $("companyToggle");
+  const prev = wrap.dataset.selected || "";
+  wrap.innerHTML = "";
   if (companies.length === 0) {
-    sel.appendChild(new Option("No companies saved — click Manage companies", ""));
-  } else {
-    companies.forEach((c) => sel.appendChild(new Option(c.name || c.gstin, c.id)));
+    wrap.innerHTML = '<span class="hint" style="color:var(--muted);">No companies configured.</span>';
+    return;
   }
-  if (companies.some((c) => c.id === prev)) sel.value = prev;
+  companies.forEach((c) => {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "company-toggle-btn";
+    btn.textContent = c.name || c.gstin;
+    btn.dataset.id = c.id;
+    btn.addEventListener("click", () => {
+      wrap.dataset.selected = c.id;
+      [...wrap.children].forEach((el) => el.classList && el.classList.toggle("active", el.dataset.id === c.id));
+      applySelectedCompany();
+      saveDraft();
+    });
+    wrap.appendChild(btn);
+  });
+  const selected = companies.some((c) => c.id === prev) ? prev : companies[0].id;
+  wrap.dataset.selected = selected;
+  [...wrap.children].forEach((el) => el.classList && el.classList.toggle("active", el.dataset.id === selected));
   applySelectedCompany();
 }
 
 function applySelectedCompany() {
   const companies = loadCompanies();
-  const c = companies.find((x) => x.id === $("companySelect").value);
+  const c = companies.find((x) => x.id === $("companyToggle").dataset.selected);
   if (!c) return;
   $("SGstin").value = c.gstin || "";
   $("SLglNm").value = c.legalName || "";
@@ -713,61 +666,6 @@ function applySelectedCompany() {
   $("SState").value = c.state || "";
   $("SPh").value = c.phone || "";
   $("SEm").value = c.email || "";
-}
-
-function renderCompanyModalList() {
-  const wrap = $("companyListWrap");
-  const companies = loadCompanies();
-  if (companies.length === 0) {
-    wrap.innerHTML = '<p class="muted-note">No companies saved yet.</p>';
-    return;
-  }
-  wrap.innerHTML = "";
-  companies.forEach((c) => {
-    const row = document.createElement("div");
-    row.className = "company-list-item";
-    row.innerHTML = `<div><div class="name">${escapeHtml(c.name || "(unnamed)")}</div><div class="gstin">${escapeHtml(c.gstin || "")}</div></div>`;
-    const btns = document.createElement("div");
-    const editBtn = document.createElement("button");
-    editBtn.className = "small"; editBtn.textContent = "Edit";
-    editBtn.onclick = () => loadCompanyIntoForm(c);
-    const delBtn = document.createElement("button");
-    delBtn.className = "small danger"; delBtn.textContent = "Delete";
-    delBtn.style.marginLeft = "6px";
-    delBtn.onclick = () => {
-      if (!confirm(`Delete company "${c.name}"?`)) return;
-      if (SEED_COMPANIES.some((s) => s.id === c.id)) markSeedDismissed(c.id);
-      saveCompanies(loadCompanies().filter((x) => x.id !== c.id));
-      renderCompanyModalList();
-      refreshCompanySelect();
-    };
-    btns.appendChild(editBtn); btns.appendChild(delBtn);
-    row.appendChild(btns);
-    wrap.appendChild(row);
-  });
-}
-
-function loadCompanyIntoForm(c) {
-  $("companyEditId").value = c.id;
-  $("companyFormTitle").textContent = "Edit company";
-  $("cName").value = c.name || "";
-  $("cGstin").value = c.gstin || "";
-  $("cLegal").value = c.legalName || "";
-  $("cTrade").value = c.tradeName || "";
-  $("cAddr1").value = c.addr1 || "";
-  $("cAddr2").value = c.addr2 || "";
-  $("cLoc").value = c.loc || "";
-  $("cPin").value = c.pin || "";
-  $("cState").value = c.state || "";
-  $("cPhone").value = c.phone || "";
-  $("cEmail").value = c.email || "";
-}
-
-function clearCompanyForm() {
-  $("companyEditId").value = "";
-  $("companyFormTitle").textContent = "Add a company";
-  ["cName", "cGstin", "cLegal", "cTrade", "cAddr1", "cAddr2", "cLoc", "cPin", "cPhone", "cEmail"].forEach((id) => $(id).value = "");
-  $("cState").value = "";
 }
 
 // ---------- buyer address book (same idea as companies, one level simpler) ----------
@@ -918,28 +816,6 @@ function clearBuyerForm() {
 }
 
 function escapeHtml(s) { return String(s).replace(/[&<>"']/g, (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[m])); }
-
-// ---------- cloud sync (optional, via a Google Sheet + Apps Script the user deploys themselves) ----------
-const CLOUD_KEY = "einvoice_cloud_config_v1";
-function loadCloudConfig() {
-  try { return Object.assign({ url: "", passphrase: "" }, JSON.parse(localStorage.getItem(CLOUD_KEY))); }
-  catch (e) { return { url: "", passphrase: "" }; }
-}
-function saveCloudConfig(cfg) { localStorage.setItem(CLOUD_KEY, JSON.stringify(cfg)); }
-
-async function cloudCall(action) {
-  const cfg = loadCloudConfig();
-  if (!cfg.url) throw new Error('Paste your Web App URL and passphrase first, then click "Save settings".');
-  const body = { action, passphrase: cfg.passphrase, companies: loadCompanies(), buyers: loadBuyers() };
-  // Apps Script Web Apps don't handle CORS preflight requests, so this is sent
-  // as a "simple" POST (default text/plain content type) to avoid triggering one.
-  const res = await fetch(cfg.url, { method: "POST", body: JSON.stringify(body), redirect: "follow" });
-  let data;
-  try { data = await res.json(); }
-  catch (e) { throw new Error("Got an unexpected response from that URL — double-check it's the /exec Web App URL and that access is set to \"Anyone\"."); }
-  if (!data.ok) throw new Error(data.error || "Cloud sync failed.");
-  return data;
-}
 
 // ---------- item rows ----------
 let itemCounter = 0;
@@ -1464,7 +1340,7 @@ function collectDraft() {
     ITEM_FIELD_CLASSES.forEach((c) => { const el = tr.querySelector("." + c); if (el) o[c] = el.value; });
     return o;
   });
-  return { fields, checks, items, companyId: $("companySelect").value, buyerId: $("buyerSelect").value };
+  return { fields, checks, items, companyId: $("companyToggle").dataset.selected || "", buyerId: $("buyerSelect").value };
 }
 
 function saveDraft() {
@@ -1488,7 +1364,12 @@ function restoreDraft() {
     itemCounter = 0;
     draft.items.forEach((it) => addItemRow(it));
   }
-  if (draft.companyId) $("companySelect").value = draft.companyId;
+  if (draft.companyId) {
+    const wrap = $("companyToggle");
+    wrap.dataset.selected = draft.companyId;
+    [...wrap.children].forEach((el) => el.classList && el.classList.toggle("active", el.dataset.id === draft.companyId));
+    applySelectedCompany();
+  }
   if (draft.buyerId) $("buyerSelect").value = draft.buyerId;
   applySettings();
   recalcAllTotals();
@@ -1713,73 +1594,8 @@ document.addEventListener("DOMContentLoaded", () => {
     if ((e.ctrlKey || e.metaKey) && e.key === "Enter") { e.preventDefault(); $("btnGenerate").click(); }
   });
 
-  // company modal
-  $("btnManageCompanies").addEventListener("click", () => {
-    renderCompanyModalList();
-    clearCompanyForm();
-    $("companyModalOverlay").classList.remove("hidden");
-  });
-  $("btnCloseCompanyModal").addEventListener("click", () => $("companyModalOverlay").classList.add("hidden"));
-  populateStateSelect($("cState"), true);
-  $("btnSaveCompany").addEventListener("click", () => {
-    const gstin = $("cGstin").value.trim().toUpperCase();
-    if (gstin && !RX.gstin.test(gstin)) { alert("That GSTIN doesn't look valid (expected 15 characters: 2 digits + 13 alphanumeric)."); return; }
-    if (!$("cName").value.trim()) { alert("Give this company a display name."); return; }
-    const companies = loadCompanies();
-    const editId = $("companyEditId").value;
-    const rec = {
-      id: editId || ("c_" + Date.now()),
-      name: $("cName").value.trim(),
-      gstin, legalName: $("cLegal").value.trim(), tradeName: $("cTrade").value.trim(),
-      addr1: $("cAddr1").value.trim(), addr2: $("cAddr2").value.trim(), loc: $("cLoc").value.trim(),
-      pin: $("cPin").value.trim(), state: $("cState").value, phone: $("cPhone").value.trim(), email: $("cEmail").value.trim()
-    };
-    const idx = companies.findIndex((x) => x.id === editId);
-    if (idx >= 0) companies[idx] = rec; else companies.push(rec);
-    saveCompanies(companies);
-    renderCompanyModalList();
-    clearCompanyForm();
-    refreshCompanySelect();
-    $("companySelect").value = rec.id;
-    applySelectedCompany();
-  });
-
-  $("companySelect").addEventListener("change", () => { applySelectedCompany(); saveDraft(); });
+  // company picker (two simple toggle buttons, built from loadCompanies())
   refreshCompanySelect();
-
-  // cloud sync modal
-  $("btnCloudSync").addEventListener("click", () => {
-    const cfg = loadCloudConfig();
-    $("cloudUrl").value = cfg.url;
-    $("cloudPass").value = cfg.passphrase;
-    $("cloudStatus").textContent = "";
-    $("cloudModalOverlay").classList.remove("hidden");
-  });
-  $("btnCloseCloudModal").addEventListener("click", () => $("cloudModalOverlay").classList.add("hidden"));
-  $("btnCloudSaveSettings").addEventListener("click", () => {
-    saveCloudConfig({ url: $("cloudUrl").value.trim(), passphrase: $("cloudPass").value });
-    $("cloudStatus").textContent = "Settings saved on this device.";
-  });
-  $("btnCloudPull").addEventListener("click", async () => {
-    if (!confirm("This replaces the companies/buyers saved on THIS device with whatever is in the Sheet. Continue?")) return;
-    $("cloudStatus").textContent = "Pulling...";
-    try {
-      const data = await cloudCall("load");
-      saveCompanies(data.companies || []);
-      saveBuyers(data.buyers || []);
-      refreshCompanySelect();
-      refreshBuyerSelect();
-      $("cloudStatus").textContent = `Pulled ${(data.companies || []).length} companies and ${(data.buyers || []).length} buyers from the cloud.`;
-    } catch (e) { $("cloudStatus").textContent = "Error: " + e.message; }
-  });
-  $("btnCloudPush").addEventListener("click", async () => {
-    if (!confirm("This replaces whatever is in the Sheet with the companies/buyers saved on THIS device. Continue?")) return;
-    $("cloudStatus").textContent = "Pushing...";
-    try {
-      await cloudCall("save");
-      $("cloudStatus").textContent = "Pushed to the cloud sheet successfully.";
-    } catch (e) { $("cloudStatus").textContent = "Error: " + e.message; }
-  });
 
   // Restore an in-progress invoice if the browser has one; otherwise start fresh
   // with a suggested next document number and today's date.
