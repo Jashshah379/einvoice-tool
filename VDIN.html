@@ -19,9 +19,12 @@
   html{scroll-behavior:smooth;}
   body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--text);margin:0;padding:0;-webkit-font-smoothing:antialiased;color-scheme:dark;}
 
-  header{background:linear-gradient(135deg,var(--primary) 0%,var(--primary-dark) 100%);color:#fff;padding:16px 22px;display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:12px;position:sticky;top:0;z-index:60;box-shadow:0 2px 14px rgba(0,0,0,.45);}
-  .company-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+  header{background:linear-gradient(135deg,var(--primary) 0%,var(--primary-dark) 100%);color:#fff;padding:16px 22px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;position:sticky;top:0;z-index:60;box-shadow:0 2px 14px rgba(0,0,0,.45);}
+  .header-spacer{width:40px;flex:none;}
+  .company-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;flex:1;justify-content:center;}
   .company-toggle{display:flex;gap:10px;flex-wrap:wrap;}
+  .profile-icon{width:40px;height:40px;flex:none;border-radius:50%;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.35);color:#fff;font-size:18px;padding:0;display:flex;align-items:center;justify-content:center;cursor:pointer;}
+  .profile-icon:hover{background:rgba(255,255,255,.24);}
   .company-toggle-btn{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.3);color:#fff;padding:11px 24px;font-size:14.5px;font-weight:700;border-radius:999px;cursor:pointer;transition:background .15s,border-color .15s,transform .05s;}
   .company-toggle-btn:hover{background:rgba(255,255,255,.16);}
   .company-toggle-btn:active{transform:scale(.98);}
@@ -120,8 +123,6 @@
   #errorBox ul{margin:6px 0 0 18px;padding:0;}
   #successBox{background:rgba(52,211,153,.12);border:1px solid rgba(52,211,153,.4);color:var(--success);padding:11px 16px;border-radius:var(--radius-sm);margin:0 0 14px;font-size:13px;display:none;font-weight:600;}
 
-  pre#jsonPreview{background:#0b0d13;color:#c9d1d9;padding:16px;border-radius:var(--radius-sm);max-height:460px;overflow:auto;font-size:12px;white-space:pre-wrap;word-break:break-word;line-height:1.6;font-family:'SF Mono',Consolas,Monaco,monospace;margin:0;border:1px solid var(--border);}
-  .jk{color:#93c5fd;} .jstr{color:#86efac;} .jnum{color:#fbbf24;} .jbool{color:#f472b6;} .jnull{color:#94a3b8;font-style:italic;}
 
   .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.65);display:flex;align-items:center;justify-content:center;z-index:100;}
   .modal-overlay.hidden{display:none;}
@@ -142,15 +143,17 @@
   @media (max-width:900px){
     .app-shell{padding:16px 12px 80px;}
   }
-  @media (max-width:700px){ header{flex-direction:column;align-items:flex-start;} }
+  @media (max-width:700px){ .header-spacer{display:none;} header{justify-content:space-between;} }
 </style>
 </head>
 <body>
 
 <header>
+  <div class="header-spacer"></div>
   <div class="company-bar">
     <div class="company-toggle" id="companyToggle"></div>
   </div>
+  <button class="profile-icon" id="btnSellerProfile" title="Seller details" aria-label="Seller details">🏢</button>
 </header>
 
 <div class="app-shell">
@@ -166,11 +169,10 @@
   <div class="card-body">
     <div class="flex-between" style="margin-bottom:12px;">
       <div class="row-inline" style="display:flex;gap:8px;align-items:center;">
-        <select id="buyerSelect" style="min-width:220px;"><option value="">-- pick a saved buyer --</option></select>
-        <button class="small" id="btnSaveBuyer">Save this buyer</button>
-        <button class="small" id="btnManageBuyers">Manage buyers</button>
+        <input id="buyerSearch" placeholder="Search buyers by name..." style="min-width:240px;" autocomplete="off">
+        <button class="small" id="btnClearBuyer">Clear</button>
       </div>
-      <div class="hint">Saved buyers stay in this browser, same as companies.</div>
+      <div class="hint">Type a couple of letters to find a saved buyer.</div>
     </div>
     <div class="grid">
       <div class="field"><label>Buyer GSTIN <span class="req">*</span></label><input id="BGstin" maxlength="15" placeholder="or URP for unregistered"><div class="err"></div></div>
@@ -225,26 +227,6 @@
         <div class="field"><label>Delivery</label><input id="pDelivery" placeholder="e.g. Goods sold at Surat"></div>
       </div>
     </details>
-  </div>
-</div>
-
-<!-- SELLER -->
-<div class="card collapsed" id="cardSeller">
-  <div class="card-head" data-toggle="cardSeller"><h2>Seller Details <span class="pill on" id="sellerPill">from company profile</span></h2><span class="chevron">▾</span></div>
-  <div class="card-body">
-    <p class="muted-note">Pulled from the company selected above. Edit here if this invoice needs a one-off change (won't affect the saved profile).</p>
-    <div class="grid">
-      <div class="field"><label>Seller GSTIN <span class="req">*</span></label><input id="SGstin" maxlength="15"><div class="err"></div></div>
-      <div class="field"><label>Legal Name <span class="req">*</span></label><input id="SLglNm"><div class="err"></div></div>
-      <div class="field"><label>Trade Name</label><input id="STrdNm"></div>
-      <div class="field"><label>Address 1 <span class="req">*</span></label><input id="SAddr1"><div class="err"></div></div>
-      <div class="field"><label>Address 2</label><input id="SAddr2"></div>
-      <div class="field"><label>Location <span class="req">*</span></label><input id="SLoc"><div class="err"></div></div>
-      <div class="field"><label>Pin Code <span class="req">*</span></label><input id="SPin" maxlength="6"><div class="err"></div></div>
-      <div class="field"><label>State <span class="req">*</span></label><select id="SState"></select><div class="err"></div></div>
-      <div class="field"><label>Phone</label><input id="SPh" maxlength="12"></div>
-      <div class="field"><label>Email</label><input id="SEm"></div>
-    </div>
   </div>
 </div>
 
@@ -382,33 +364,15 @@
 </div>
 
 <div class="actions-bar">
-  <button class="primary" id="btnValidate">Validate</button>
-  <button class="success" id="btnGenerate">Generate &amp; download JSON</button>
-  <button id="btnCopyJson">Copy JSON</button>
-  <button id="btnPrintInvoice">Print / save invoice PDF</button>
+  <button class="success" id="btnGenerate">Generate JSON</button>
+  <button id="btnPrintInvoice">Print</button>
   <button id="btnLoadSample">Load sample invoice</button>
   <button id="btnReset">New invoice</button>
   <span id="statusMsg" style="font-size:13px;color:var(--muted);"></span>
 </div>
 
-<div class="card" id="cardPreview" style="margin-top:16px;">
-  <div class="card-head" data-toggle="cardPreview"><h2>JSON Preview</h2><span class="chevron">▾</span></div>
-  <div class="card-body">
-    <pre id="jsonPreview">Click "Validate" or "Generate &amp; download JSON" to see the output here.</pre>
-    <div class="muted-note" style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border);">
-      <strong style="color:var(--text);">What to do with this JSON:</strong> upload it on the official e-Invoice portal at
-      <a href="https://einvoice1.gst.gov.in/" target="_blank" rel="noopener">einvoice1.gst.gov.in</a> under e-Invoice → Bulk Upload
-      (or through your GSP/accounting software if you use one). The portal validates it, returns a signed IRN + QR code, and that's
-      what you attach to the invoice copy you give the buyer — this tool only prepares the JSON, it doesn't talk to the government
-      portal directly. If your turnover requires it, invoices must be uploaded within 30 days of the invoice date.
-    </div>
-  </div>
-</div>
-
 </main>
 </div>
-
-<footer>Runs entirely in your browser — nothing is uploaded anywhere. Company profiles &amp; draft data are stored locally in this browser only. Schema: e-Invoice Version 1.1 (IRP).</footer>
 
 <datalist id="portList"></datalist>
 <datalist id="gstRateList">
@@ -423,31 +387,25 @@
   <option value="96"><option value="142"><option value="160"><option value="204"><option value="290">
 </datalist>
 
-<!-- MANAGE BUYERS MODAL -->
-<div class="modal-overlay hidden" id="buyerModalOverlay">
+<!-- SELLER PROFILE MODAL -->
+<div class="modal-overlay hidden" id="sellerModalOverlay">
   <div class="modal">
-    <h3>Manage buyers</h3>
-    <div id="buyerListWrap"></div>
-    <hr style="border:none;border-top:1px solid var(--border);margin:14px 0;">
-    <h3 id="buyerFormTitle" style="font-size:14px;">Add a buyer</h3>
-    <input type="hidden" id="buyerEditId">
+    <h3>Seller Details <span class="pill on" id="sellerPill">from company profile</span></h3>
+    <p class="muted-note">Pulled from the company selected up top. Edit here if this invoice needs a one-off change (won't affect the saved profile).</p>
     <div class="grid">
-      <div class="field"><label>Display name (for the dropdown)</label><input id="bName" placeholder="e.g. Sample Buyer Enterprises"></div>
-      <div class="field"><label>GSTIN</label><input id="bGstin" maxlength="15"></div>
-      <div class="field"><label>Legal Name</label><input id="bLegal"></div>
-      <div class="field"><label>Trade Name</label><input id="bTrade"></div>
-      <div class="field"><label>Place Of Supply (state)</label><select id="bPos"></select></div>
-      <div class="field"><label>Address 1</label><input id="bAddr1"></div>
-      <div class="field"><label>Address 2</label><input id="bAddr2"></div>
-      <div class="field"><label>Location</label><input id="bLoc"></div>
-      <div class="field"><label>Pin Code</label><input id="bPin" maxlength="6"></div>
-      <div class="field"><label>State</label><select id="bState"></select></div>
-      <div class="field"><label>Phone</label><input id="bPhone" maxlength="12"></div>
-      <div class="field"><label>Email</label><input id="bEmail"></div>
+      <div class="field"><label>Seller GSTIN <span class="req">*</span></label><input id="SGstin" maxlength="15"><div class="err"></div></div>
+      <div class="field"><label>Legal Name <span class="req">*</span></label><input id="SLglNm"><div class="err"></div></div>
+      <div class="field"><label>Trade Name</label><input id="STrdNm"></div>
+      <div class="field"><label>Address 1 <span class="req">*</span></label><input id="SAddr1"><div class="err"></div></div>
+      <div class="field"><label>Address 2</label><input id="SAddr2"></div>
+      <div class="field"><label>Location <span class="req">*</span></label><input id="SLoc"><div class="err"></div></div>
+      <div class="field"><label>Pin Code <span class="req">*</span></label><input id="SPin" maxlength="6"><div class="err"></div></div>
+      <div class="field"><label>State <span class="req">*</span></label><select id="SState"></select><div class="err"></div></div>
+      <div class="field"><label>Phone</label><input id="SPh" maxlength="12"></div>
+      <div class="field"><label>Email</label><input id="SEm"></div>
     </div>
     <div style="margin-top:14px;display:flex;gap:10px;justify-content:flex-end;">
-      <button id="btnCloseBuyerModal">Close</button>
-      <button class="primary" id="btnSaveBuyerRecord">Save buyer</button>
+      <button id="btnCloseSellerModal">Close</button>
     </div>
   </div>
 </div>
@@ -490,8 +448,13 @@ const DESC_SUGGESTIONS = [
 ];
 
 // Attaches a small click-to-fill suggestion dropdown to a text input.
-// `items` can be an array of strings, or {value,label} objects.
-function attachSuggestions(input, items) {
+// `items` can be an array of strings/{value,label} objects, OR a function
+// returning such an array (evaluated fresh every time the box renders, so
+// the suggestion list can reflect live data like saved buyers).
+// `onSelect(item)`, if given, fires in addition to filling the input value —
+// used when picking a suggestion should also populate other fields.
+function attachSuggestions(input, items, onSelect) {
+  const getItems = () => (typeof items === "function" ? items() : items);
   const getValue = (it) => (typeof it === "string" ? it : it.value);
   const getLabel = (it) => (typeof it === "string" ? it : it.label || it.value);
   const box = document.createElement("div");
@@ -505,8 +468,9 @@ function attachSuggestions(input, items) {
     box.style.width = Math.max(r.width, 220) + "px";
   }
   function render() {
+    const list = getItems() || [];
     const q = input.value.trim().toLowerCase();
-    const matches = items.filter((it) => !q || getLabel(it).toLowerCase().includes(q) || getValue(it).toLowerCase().includes(q));
+    const matches = list.filter((it) => !q || getLabel(it).toLowerCase().includes(q) || getValue(it).toLowerCase().includes(q));
     if (matches.length === 0) { box.classList.add("hidden"); return; }
     box.innerHTML = "";
     matches.slice(0, 20).forEach((it) => {
@@ -518,6 +482,7 @@ function attachSuggestions(input, items) {
         input.value = getValue(it);
         box.classList.add("hidden");
         input.dispatchEvent(new Event("input", { bubbles: true }));
+        if (onSelect) onSelect(it);
       });
       box.appendChild(row);
     });
@@ -830,8 +795,28 @@ function loadBuyers() {
     const wasDismissed = dismissed.includes(seed.id);
     if (!exists && !wasDismissed) { list.push({ ...seed }); changed = true; }
   });
-  if (changed) localStorage.setItem(BUYER_KEY, JSON.stringify(list));
-  return list;
+
+  // De-duplicate: if the same buyer (matched by GSTIN) ended up saved twice
+  // under different ids — e.g. from the old "Save this buyer" button — keep
+  // just one copy, preferring the built-in seed record if one of the
+  // duplicates is it. Buyers with a blank GSTIN are never merged, since a
+  // blank value isn't a reliable way to tell two different buyers apart.
+  const seenAt = new Map();
+  const deduped = [];
+  list.forEach((b) => {
+    const key = (b.gstin || "").trim().toUpperCase();
+    if (!key) { deduped.push(b); return; }
+    if (!seenAt.has(key)) { seenAt.set(key, deduped.length); deduped.push(b); return; }
+    changed = true;
+    const idx = seenAt.get(key);
+    const isSeed = SEED_BUYERS.some((s) => s.id === b.id);
+    const existingIsSeed = SEED_BUYERS.some((s) => s.id === deduped[idx].id);
+    if (isSeed && !existingIsSeed) deduped[idx] = b; // prefer the seed copy
+    // otherwise drop this duplicate, keep what's already in deduped
+  });
+
+  if (changed) localStorage.setItem(BUYER_KEY, JSON.stringify(deduped));
+  return deduped;
 }
 function saveBuyers(list) { localStorage.setItem(BUYER_KEY, JSON.stringify(list)); }
 function markBuyerSeedDismissed(id) {
@@ -840,19 +825,25 @@ function markBuyerSeedDismissed(id) {
   if (!dismissed.includes(id)) { dismissed.push(id); localStorage.setItem(BUYER_SEED_DISMISSED_KEY, JSON.stringify(dismissed)); }
 }
 
-function refreshBuyerSelect() {
-  const buyers = loadBuyers();
-  const sel = $("buyerSelect");
-  const prev = sel.value;
-  sel.innerHTML = "";
-  sel.appendChild(new Option("-- pick a saved buyer --", ""));
-  buyers.forEach((b) => sel.appendChild(new Option(b.name || b.gstin, b.id)));
-  if (buyers.some((b) => b.id === prev)) sel.value = prev;
+// Suggestion items for the buyer search box — built fresh on every render
+// so it always reflects the current saved-buyer list.
+function buyerSuggestionItems() {
+  return loadBuyers().map((b) => ({
+    value: b.name || b.gstin || "Unnamed buyer",
+    label: (b.name || b.gstin || "Unnamed buyer") + (b.gstin ? " — " + b.gstin : ""),
+    id: b.id
+  }));
 }
 
-function applySelectedBuyer() {
-  const id = $("buyerSelect").value;
-  if (!id) return;
+function selectBuyerById(id) {
+  if (!id) {
+    // Going back to "-- pick a saved buyer --" clears the previously
+    // selected buyer's details instead of leaving stale data in the fields.
+    ["BGstin", "BLglNm", "BTrdNm", "BAddr1", "BAddr2", "BLoc", "BPin", "BPh", "BEm"].forEach((fid) => { $(fid).value = ""; });
+    $("BPos").value = ""; $("BState").value = "";
+    document.querySelectorAll("#itemsBody tr").forEach(recalcItemRow);
+    return;
+  }
   const b = loadBuyers().find((x) => x.id === id);
   if (!b) return;
   $("BGstin").value = b.gstin || "";
@@ -867,77 +858,6 @@ function applySelectedBuyer() {
   $("BPh").value = b.phone || "";
   $("BEm").value = b.email || "";
   document.querySelectorAll("#itemsBody tr").forEach(recalcItemRow);
-}
-
-function currentBuyerFieldsAsRecord(existingId) {
-  return {
-    id: existingId || ("b_" + Date.now()),
-    name: $("BTrdNm").value.trim() || $("BLglNm").value.trim() || $("BGstin").value.trim() || "Unnamed buyer",
-    gstin: $("BGstin").value.trim().toUpperCase(),
-    legalName: $("BLglNm").value.trim(),
-    tradeName: $("BTrdNm").value.trim(),
-    pos: $("BPos").value,
-    addr1: $("BAddr1").value.trim(),
-    addr2: $("BAddr2").value.trim(),
-    loc: $("BLoc").value.trim(),
-    pin: $("BPin").value.trim(),
-    state: $("BState").value,
-    phone: $("BPh").value.trim(),
-    email: $("BEm").value.trim()
-  };
-}
-
-function renderBuyerModalList() {
-  const wrap = $("buyerListWrap");
-  const buyers = loadBuyers();
-  if (buyers.length === 0) { wrap.innerHTML = '<p class="muted-note">No buyers saved yet.</p>'; return; }
-  wrap.innerHTML = "";
-  buyers.forEach((b) => {
-    const row = document.createElement("div");
-    row.className = "company-list-item";
-    row.innerHTML = `<div><div class="name">${escapeHtml(b.name || "(unnamed)")}</div><div class="gstin">${escapeHtml(b.gstin || "")}</div></div>`;
-    const btns = document.createElement("div");
-    const editBtn = document.createElement("button");
-    editBtn.className = "small"; editBtn.textContent = "Edit";
-    editBtn.onclick = () => loadBuyerIntoForm(b);
-    const delBtn = document.createElement("button");
-    delBtn.className = "small danger"; delBtn.textContent = "Delete";
-    delBtn.style.marginLeft = "6px";
-    delBtn.onclick = () => {
-      if (!confirm(`Delete buyer "${b.name}"?`)) return;
-      if (SEED_BUYERS.some((s) => s.id === b.id)) markBuyerSeedDismissed(b.id);
-      saveBuyers(loadBuyers().filter((x) => x.id !== b.id));
-      renderBuyerModalList();
-      refreshBuyerSelect();
-    };
-    btns.appendChild(editBtn); btns.appendChild(delBtn);
-    row.appendChild(btns);
-    wrap.appendChild(row);
-  });
-}
-
-function loadBuyerIntoForm(b) {
-  $("buyerEditId").value = b.id;
-  $("buyerFormTitle").textContent = "Edit buyer";
-  $("bName").value = b.name || "";
-  $("bGstin").value = b.gstin || "";
-  $("bLegal").value = b.legalName || "";
-  $("bTrade").value = b.tradeName || "";
-  $("bPos").value = b.pos || "";
-  $("bAddr1").value = b.addr1 || "";
-  $("bAddr2").value = b.addr2 || "";
-  $("bLoc").value = b.loc || "";
-  $("bPin").value = b.pin || "";
-  $("bState").value = b.state || "";
-  $("bPhone").value = b.phone || "";
-  $("bEmail").value = b.email || "";
-}
-
-function clearBuyerForm() {
-  $("buyerEditId").value = "";
-  $("buyerFormTitle").textContent = "Add a buyer";
-  ["bName", "bGstin", "bLegal", "bTrade", "bAddr1", "bAddr2", "bLoc", "bPin", "bPhone", "bEmail"].forEach((id) => $(id).value = "");
-  $("bPos").value = ""; $("bState").value = "";
 }
 
 function escapeHtml(s) { return String(s).replace(/[&<>"']/g, (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[m])); }
@@ -1384,19 +1304,6 @@ function buildInvoiceJson() {
   return invoice;
 }
 
-// ---------- JSON preview syntax highlighting (display only; downloads/clipboard use plain text) ----------
-function syntaxHighlightJson(obj) {
-  const text = JSON.stringify(obj, null, 2);
-  const escaped = text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-  return escaped.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false)\b|\bnull\b|-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?)/g, (match) => {
-    let cls = "jnum";
-    if (/^"/.test(match)) cls = /:$/.test(match) ? "jk" : "jstr";
-    else if (/true|false/.test(match)) cls = "jbool";
-    else if (/null/.test(match)) cls = "jnull";
-    return `<span class="${cls}">${match}</span>`;
-  });
-}
-
 function downloadJson(obj) {
   const docNo = ($("DocNo").value.trim() || "invoice").replace(/[^a-zA-Z0-9-_]/g, "_");
   const blob = new Blob([JSON.stringify(obj, null, 2)], { type: "application/json" });
@@ -1543,36 +1450,37 @@ function renderVamaInvoiceHtml(d) {
       <td class="num">${numAlways(r.price)}</td>
       <td class="num">${numAlways(r.total)}</td>
     </tr>`).join("");
-  const blankRowsHtml = Array.from({ length: Math.max(0, 6 - rows.length) })
-    .map(() => `<tr><td>&nbsp;</td><td></td><td></td><td></td><td></td></tr>`).join("");
+  const blankRowsHtml = "";
 
   return `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Invoice ${esc(g("DocNo"))}</title>
   <style>
-    @page { margin: 18mm 14mm; }
-    body{font-family:Arial,Helvetica,sans-serif;color:#111;font-size:12px;margin:0;}
-    .letterhead-space{height:110px;}
-    table.frame{width:100%;border-collapse:collapse;border:1.5px solid #000;}
-    table.frame > tbody > tr > td{border:1px solid #000;vertical-align:top;padding:6px 8px;}
-    .hdr{text-align:center;font-weight:700;font-size:14px;letter-spacing:.03em;}
-    .meta-table{width:100%;border-collapse:collapse;font-size:11.5px;}
-    .meta-table td{border:none;padding:1px 0;}
+    @page { margin: 10mm 12mm; size: A4; }
+    *{box-sizing:border-box;}
+    html,body{height:auto;}
+    body{font-family:Arial,Helvetica,sans-serif;color:#111;font-size:10.5px;margin:0;line-height:1.3;}
+    .letterhead-space{height:55px;}
+    table.frame{width:100%;border-collapse:collapse;border:1.5px solid #000;page-break-inside:avoid;}
+    table.frame > tbody > tr > td{border:1px solid #000;vertical-align:top;padding:4px 7px;}
+    .hdr{text-align:center;font-weight:700;font-size:13px;letter-spacing:.03em;}
+    .meta-table{width:100%;border-collapse:collapse;font-size:10.5px;}
+    .meta-table td{border:none;padding:0;}
     .meta-table td.k{width:38%;font-weight:600;}
-    table.items{width:100%;border-collapse:collapse;font-size:11.5px;margin-top:0;}
-    table.items th,table.items td{border:1px solid #000;padding:4px 6px;text-align:left;}
+    table.items{width:100%;border-collapse:collapse;font-size:10.5px;margin-top:6px;page-break-inside:avoid;}
+    table.items th,table.items td{border:1px solid #000;padding:3px 6px;text-align:left;}
     table.items th{background:#f0f0f0;font-weight:700;}
     table.items td.c{text-align:center;}
     table.items td.num, table.items th.num{text-align:right;}
     .totrow td{font-weight:700;}
-    table.words-tax{width:100%;border-collapse:collapse;font-size:11.5px;margin-top:0;}
-    table.words-tax td{border:1px solid #000;padding:6px 8px;vertical-align:top;}
+    table.words-tax{width:100%;border-collapse:collapse;font-size:10.5px;margin-top:6px;page-break-inside:avoid;}
+    table.words-tax td{border:1px solid #000;padding:5px 7px;vertical-align:top;}
     table.tax-mini{width:100%;border-collapse:collapse;}
-    table.tax-mini td{border:none;padding:1px 0;}
+    table.tax-mini td{border:none;padding:0;}
     table.tax-mini td.amt{text-align:right;}
-    .declaration{font-size:9.5px;color:#222;line-height:1.5;padding:8px;border:1px solid #000;border-top:none;}
-    table.sig{width:100%;border-collapse:collapse;font-size:11.5px;}
-    table.sig td{border:1px solid #000;border-top:none;padding:26px 8px 10px;vertical-align:bottom;}
-    .foot-note{margin-top:10px;font-size:9.5px;color:#666;}
-    @media print{ .letterhead-space{height:110px;} }
+    .declaration{font-size:8.5px;color:#222;line-height:1.35;padding:6px 7px;border:1px solid #000;border-top:none;page-break-inside:avoid;}
+    table.sig{width:100%;border-collapse:collapse;font-size:10.5px;page-break-inside:avoid;}
+    table.sig td{border:1px solid #000;border-top:none;padding:14px 7px 6px;vertical-align:bottom;}
+    .foot-note{margin-top:6px;font-size:8.5px;color:#666;}
+    @media print{ .letterhead-space{height:55px;} }
   </style></head><body>
     <div class="letterhead-space"></div>
     <table class="frame">
@@ -1696,38 +1604,39 @@ function renderDivineInvoiceHtml(d) {
       <td class="num">${numAlways(r.price)}</td>
       <td class="num">${numAlways(r.total)}</td>
     </tr>`).join("");
-  const blankRowsHtml = Array.from({ length: Math.max(0, 4 - rows.length) })
-    .map(() => `<tr><td>&nbsp;</td><td></td><td></td><td></td><td></td><td></td></tr>`).join("");
+  const blankRowsHtml = "";
 
   return `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Invoice ${esc(g("DocNo"))}</title>
   <style>
-    @page { margin: 18mm 14mm; }
-    body{font-family:Arial,Helvetica,sans-serif;color:#111;font-size:12px;margin:0;}
-    .letterhead-space{height:110px;}
-    table.frame{width:100%;border-collapse:collapse;border:1.5px solid #000;}
-    table.frame > tbody > tr > td{border:1px solid #000;vertical-align:top;padding:6px 8px;}
-    .hdr{text-align:center;font-weight:700;font-size:14px;letter-spacing:.03em;}
-    .meta-table{width:100%;border-collapse:collapse;font-size:11.5px;}
-    .meta-table td{border:none;padding:1px 0;}
+    @page { margin: 10mm 12mm; size: A4; }
+    *{box-sizing:border-box;}
+    html,body{height:auto;}
+    body{font-family:Arial,Helvetica,sans-serif;color:#111;font-size:10.5px;margin:0;line-height:1.3;}
+    .letterhead-space{height:55px;}
+    table.frame{width:100%;border-collapse:collapse;border:1.5px solid #000;page-break-inside:avoid;}
+    table.frame > tbody > tr > td{border:1px solid #000;vertical-align:top;padding:4px 7px;}
+    .hdr{text-align:center;font-weight:700;font-size:13px;letter-spacing:.03em;}
+    .meta-table{width:100%;border-collapse:collapse;font-size:10.5px;}
+    .meta-table td{border:none;padding:0;}
     .meta-table td.k{width:38%;font-weight:600;}
-    .pay-hdr{text-decoration:underline;font-weight:700;margin-top:10px;}
-    table.items{width:100%;border-collapse:collapse;font-size:11.5px;margin-top:0;}
-    table.items th,table.items td{border:1px solid #000;padding:4px 6px;text-align:left;}
+    .pay-hdr{text-decoration:underline;font-weight:700;margin-top:6px;}
+    table.items{width:100%;border-collapse:collapse;font-size:10.5px;margin-top:6px;page-break-inside:avoid;}
+    table.items th,table.items td{border:1px solid #000;padding:3px 6px;text-align:left;}
     table.items th{background:#f0f0f0;font-weight:700;}
     table.items td.c{text-align:center;}
     table.items td.num, table.items th.num{text-align:right;}
-    table.items .hsn{font-size:10px;color:#333;}
-    table.words-tax{width:100%;border-collapse:collapse;font-size:11.5px;margin-top:0;}
-    table.words-tax td{border:1px solid #000;padding:6px 8px;vertical-align:top;}
+    table.items .hsn{font-size:9px;color:#333;}
+    table.words-tax{width:100%;border-collapse:collapse;font-size:10.5px;margin-top:6px;page-break-inside:avoid;}
+    table.words-tax td{border:1px solid #000;padding:5px 7px;vertical-align:top;}
     table.tax-mini{width:100%;border-collapse:collapse;}
-    table.tax-mini td{border:none;padding:2px 0;}
+    table.tax-mini td{border:none;padding:1px 0;}
     table.tax-mini td.amt{text-align:right;}
     table.tax-mini tr.total td{font-weight:700;border-top:1px solid #000;}
-    .declaration{font-size:9.5px;color:#222;line-height:1.5;padding:8px;border:1px solid #000;border-top:none;}
-    table.sig{width:100%;border-collapse:collapse;font-size:11.5px;}
-    table.sig td{border:1px solid #000;border-top:none;padding:26px 8px 10px;vertical-align:bottom;}
-    .foot-note{margin-top:10px;font-size:9.5px;color:#666;}
-    @media print{ .letterhead-space{height:110px;} }
+    .declaration{font-size:8.5px;color:#222;line-height:1.35;padding:6px 7px;border:1px solid #000;border-top:none;page-break-inside:avoid;}
+    table.sig{width:100%;border-collapse:collapse;font-size:10.5px;page-break-inside:avoid;}
+    table.sig td{border:1px solid #000;border-top:none;padding:14px 7px 6px;vertical-align:bottom;}
+    .foot-note{margin-top:6px;font-size:8.5px;color:#666;}
+    @media print{ .letterhead-space{height:55px;} }
   </style></head><body>
     <div class="letterhead-space"></div>
     <table class="frame">
@@ -1898,22 +1807,13 @@ document.addEventListener("DOMContentLoaded", () => {
   $("valRoundOff").addEventListener("input", recalcAllTotals);
 
   $("btnAddItem").addEventListener("click", () => { addItemRow(); saveDraft(); });
-  $("btnValidate").addEventListener("click", () => showErrors(validateAll()));
   $("btnGenerate").addEventListener("click", () => {
     const errors = validateAll();
     if (!showErrors(errors)) return;
     const invoice = buildInvoiceJson();
-    $("jsonPreview").innerHTML = syntaxHighlightJson(invoice);
     downloadJson(invoice);
     localStorage.setItem(DOCNO_KEY, $("DocNo").value.trim());
     $("statusMsg").textContent = "JSON downloaded.";
-  });
-  $("btnCopyJson").addEventListener("click", async () => {
-    const invoice = buildInvoiceJson();
-    const text = JSON.stringify(invoice, null, 2);
-    $("jsonPreview").innerHTML = syntaxHighlightJson(invoice);
-    try { await navigator.clipboard.writeText(text); $("statusMsg").textContent = "JSON copied to clipboard."; }
-    catch (e) { $("statusMsg").textContent = "Could not access clipboard — copy from the preview box."; }
   });
   $("btnPrintInvoice").addEventListener("click", printInvoice);
   $("btnLoadSample").addEventListener("click", () => { loadSampleInvoice(); saveDraft(); });
@@ -1923,7 +1823,7 @@ document.addEventListener("DOMContentLoaded", () => {
     $("itemsBody").innerHTML = "";
     itemCounter = 0;
     ["BGstin", "BLglNm", "BTrdNm", "BAddr1", "BAddr2", "BLoc", "BPin", "BPh", "BEm"].forEach((id) => $(id).value = "");
-    $("BPos").value = ""; $("BState").value = ""; $("buyerSelect").value = "";
+    $("BPos").value = ""; $("BState").value = ""; $("buyerSearch").value = "";
     $("DocNo").value = suggestNextDocNo();
     $("DocDt").value = fmtDateToday();
     addItemRow();
@@ -1931,47 +1831,15 @@ document.addEventListener("DOMContentLoaded", () => {
     $("statusMsg").textContent = "Ready for a new invoice.";
   });
 
-  // buyer address book
-  refreshBuyerSelect();
-  $("buyerSelect").addEventListener("change", () => { applySelectedBuyer(); saveDraft(); });
-  $("btnSaveBuyer").addEventListener("click", () => {
-    if (!$("BGstin").value.trim() && !$("BLglNm").value.trim()) { alert("Fill in at least the buyer's GSTIN or legal name first."); return; }
-    const buyers = loadBuyers();
-    const rec = currentBuyerFieldsAsRecord();
-    buyers.push(rec);
-    saveBuyers(buyers);
-    refreshBuyerSelect();
-    $("buyerSelect").value = rec.id;
-    $("statusMsg").textContent = `Saved "${rec.name}" to your buyer list.`;
+  // buyer address book — search-as-you-type instead of a plain dropdown
+  attachSuggestions($("buyerSearch"), buyerSuggestionItems, (it) => { selectBuyerById(it.id); saveDraft(); });
+  $("btnClearBuyer").addEventListener("click", () => {
+    $("buyerSearch").value = "";
+    selectBuyerById("");
+    saveDraft();
   });
-  $("btnManageBuyers").addEventListener("click", () => {
-    renderBuyerModalList();
-    clearBuyerForm();
-    populateStateSelect($("bPos"), true);
-    populateStateSelect($("bState"), true);
-    $("buyerModalOverlay").classList.remove("hidden");
-  });
-  $("btnCloseBuyerModal").addEventListener("click", () => $("buyerModalOverlay").classList.add("hidden"));
-  $("btnSaveBuyerRecord").addEventListener("click", () => {
-    const gstin = $("bGstin").value.trim().toUpperCase();
-    if (gstin && gstin !== "URP" && !RX.gstin.test(gstin)) { alert("That GSTIN doesn't look valid (expected 15 characters: 2 digits + 13 alphanumeric, or URP)."); return; }
-    if (!$("bName").value.trim()) { alert("Give this buyer a display name."); return; }
-    const buyers = loadBuyers();
-    const editId = $("buyerEditId").value;
-    const rec = {
-      id: editId || ("b_" + Date.now()),
-      name: $("bName").value.trim(), gstin,
-      legalName: $("bLegal").value.trim(), tradeName: $("bTrade").value.trim(), pos: $("bPos").value,
-      addr1: $("bAddr1").value.trim(), addr2: $("bAddr2").value.trim(), loc: $("bLoc").value.trim(),
-      pin: $("bPin").value.trim(), state: $("bState").value, phone: $("bPhone").value.trim(), email: $("bEmail").value.trim()
-    };
-    const idx = buyers.findIndex((x) => x.id === editId);
-    if (idx >= 0) buyers[idx] = rec; else buyers.push(rec);
-    saveBuyers(buyers);
-    renderBuyerModalList();
-    clearBuyerForm();
-    refreshBuyerSelect();
-  });
+  $("btnSellerProfile").addEventListener("click", () => $("sellerModalOverlay").classList.remove("hidden"));
+  $("btnCloseSellerModal").addEventListener("click", () => $("sellerModalOverlay").classList.add("hidden"));
 
   // draft autosave: any input/change anywhere in the form schedules a save
   document.addEventListener("input", (e) => { if (!e.target.closest(".modal")) scheduleDraftSave(); });
