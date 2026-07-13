@@ -97,6 +97,14 @@
   table.items.hide-bar .col-bar{display:none;}
   table.items.hide-freeqty .col-freeqty{display:none;}
   table.items.hide-batch .col-batch{display:none;}
+  table.items.hide-cess .col-cess{display:none;}
+
+  /* click-to-fill suggestion dropdown, used for HSN + Description fields
+     instead of native <datalist> (unreliable across browsers) */
+  .suggest-box{position:absolute;z-index:200;background:var(--surface-2);border:1px solid var(--border);border-radius:8px;box-shadow:var(--shadow-md);max-height:220px;overflow-y:auto;font-size:12.5px;}
+  .suggest-box.hidden{display:none;}
+  .suggest-item{padding:7px 10px;cursor:pointer;color:var(--text);white-space:nowrap;}
+  .suggest-item:hover{background:var(--primary-light);}
   .item-remove{background:var(--surface-2);border:1px solid var(--danger);color:var(--danger);border-radius:6px;padding:4px 9px;cursor:pointer;font-size:12px;line-height:1;}
   .item-remove:hover{background:rgba(248,113,113,.14);}
 
@@ -272,6 +280,7 @@
       <div class="toggle-row"><span class="q">Batch details on items?</span><label class="switch"><input type="checkbox" id="setBatch"><span class="track"></span></label></div>
       <div class="toggle-row"><span class="q">Export details?</span><label class="switch"><input type="checkbox" id="setExport"><span class="track"></span></label></div>
       <div class="toggle-row"><span class="q">E-way bill details?</span><label class="switch"><input type="checkbox" id="setEwb"><span class="track"></span></label></div>
+      <div class="toggle-row"><span class="q">Cess / State Cess / other charges applicable?</span><label class="switch"><input type="checkbox" id="setCess"><span class="track"></span></label></div>
     </div>
   </div>
 </div>
@@ -317,15 +326,15 @@
       <div class="hint">Taxable value, GST amounts and item total auto-calculate — you can still overwrite any cell.</div>
     </div>
     <div class="table-scroll">
-      <table class="items hide-isserv hide-bar hide-freeqty hide-batch" id="itemsTable">
+      <table class="items hide-isserv hide-bar hide-freeqty hide-batch hide-cess" id="itemsTable">
         <thead><tr>
           <th>Sl.No*</th><th>Description</th><th class="col-isserv">Is Service</th><th>HSN*</th><th class="col-bar">Barcode</th>
           <th>Qty*</th><th class="col-freeqty">Free Qty</th><th>Unit*</th><th>Unit Price*</th><th>Gross Amt*</th>
           <th>Discount</th><th>Pre-Tax Val</th><th>Taxable Val*</th><th>GST Rate %*</th>
           <th>Sgst Amt</th><th>Cgst Amt</th><th>Igst Amt</th>
-          <th>Cess Rate %</th><th>Cess Amt</th><th>Cess Non-Adval</th>
-          <th>StCess Rate %</th><th>StCess Amt</th><th>StCess Non-Adval</th>
-          <th>Other Chrg</th><th>Item Total</th>
+          <th class="col-cess">Cess Rate %</th><th class="col-cess">Cess Amt</th><th class="col-cess">Cess Non-Adval</th>
+          <th class="col-cess">StCess Rate %</th><th class="col-cess">StCess Amt</th><th class="col-cess">StCess Non-Adval</th>
+          <th class="col-cess">Other Chrg</th><th>Item Total</th>
           <th class="col-batch">Batch Name</th><th class="col-batch">Batch Exp Dt</th><th class="col-batch">Warranty Dt</th>
           <th></th>
         </tr></thead>
@@ -336,7 +345,7 @@
 </div>
 
 <!-- VALUE DETAILS -->
-<div class="card collapsed" id="cardValue">
+<div class="card" id="cardValue">
   <div class="card-head" data-toggle="cardValue"><h2>Value Details</h2><span class="chevron">▾</span></div>
   <div class="card-body">
     <p class="muted-note">Auto-summed from the item list. Discount / other charges / round-off can be adjusted manually — Total Invoice Value recalculates.</p>
@@ -419,7 +428,7 @@
 
 <datalist id="portList"></datalist>
 <datalist id="gstRateList">
-  <option value="0"><option value="0.1"><option value="0.25"><option value="0.5">
+  <option value="0"><option value="0.1"><option value="0.25"><option value="0.5"><option value="1.5">
   <option value="3"><option value="5"><option value="12"><option value="18"><option value="28">
 </datalist>
 <datalist id="cessRateList">
@@ -428,13 +437,6 @@
   <option value="21"><option value="22"><option value="36"><option value="49"><option value="60">
   <option value="61"><option value="65"><option value="71"><option value="72"><option value="89">
   <option value="96"><option value="142"><option value="160"><option value="204"><option value="290">
-</datalist>
-<datalist id="hsnList">
-  <option value="71023100" label="Natural diamond — rough/unworked (non-industrial)">
-  <option value="71023910" label="Natural diamond — cut/polished (non-industrial)">
-  <option value="71023990" label="Natural diamond — other worked (non-industrial)">
-  <option value="71042010" label="Lab-grown diamond — rough/unworked">
-  <option value="71049010" label="Lab-grown diamond — cut/polished (worked)">
 </datalist>
 
 <!-- MANAGE BUYERS MODAL -->
@@ -481,6 +483,67 @@ const TRANS_MODE_CODE = { "Road": "1", "Rail": "2", "Air": "3", "Ship/Road cum S
 const VEH_TYPE_CODE = { "Regular": "R", "ODC": "O" };
 const YN_CODE = { "Yes": "Y", "No": "N" };
 const EXPORT_SUPPLY_TYPES = ["EXPWP", "EXPWOP", "DEXP"];
+
+// Diamond-trade HSN codes and common product descriptions, offered as a
+// click-to-fill suggestion list on the HSN and Description item fields.
+// Built as a small custom dropdown (rather than a native <datalist>) because
+// datalist suggestions are unreliable across browsers — Safari in particular
+// does not show them at all.
+const HSN_SUGGESTIONS = [
+  { value: "71023100", label: "71023100 — Natural diamond, rough/unworked" },
+  { value: "71023910", label: "71023910 — Natural diamond, cut & polished" },
+  { value: "71023990", label: "71023990 — Natural diamond, other worked" },
+  { value: "71042010", label: "71042010 — Lab-grown diamond, rough/unworked" },
+  { value: "71049010", label: "71049010 — Lab-grown diamond, cut & polished" }
+];
+const DESC_SUGGESTIONS = [
+  "Cut & Polished Diamonds",
+  "Rough Diamonds",
+  "Polished Diamonds",
+  "Loose Diamonds",
+  "Lab-Grown Cut & Polished Diamonds",
+  "Lab-Grown Rough Diamonds"
+];
+
+// Attaches a small click-to-fill suggestion dropdown to a text input.
+// `items` can be an array of strings, or {value,label} objects.
+function attachSuggestions(input, items) {
+  const getValue = (it) => (typeof it === "string" ? it : it.value);
+  const getLabel = (it) => (typeof it === "string" ? it : it.label || it.value);
+  const box = document.createElement("div");
+  box.className = "suggest-box hidden";
+  document.body.appendChild(box);
+
+  function position() {
+    const r = input.getBoundingClientRect();
+    box.style.left = r.left + window.scrollX + "px";
+    box.style.top = r.bottom + window.scrollY + 2 + "px";
+    box.style.width = Math.max(r.width, 220) + "px";
+  }
+  function render() {
+    const q = input.value.trim().toLowerCase();
+    const matches = items.filter((it) => !q || getLabel(it).toLowerCase().includes(q) || getValue(it).toLowerCase().includes(q));
+    if (matches.length === 0) { box.classList.add("hidden"); return; }
+    box.innerHTML = "";
+    matches.slice(0, 20).forEach((it) => {
+      const row = document.createElement("div");
+      row.className = "suggest-item";
+      row.textContent = getLabel(it);
+      row.addEventListener("mousedown", (e) => {
+        e.preventDefault();
+        input.value = getValue(it);
+        box.classList.add("hidden");
+        input.dispatchEvent(new Event("input", { bubbles: true }));
+      });
+      box.appendChild(row);
+    });
+    position();
+    box.classList.remove("hidden");
+  }
+  input.addEventListener("focus", render);
+  input.addEventListener("input", render);
+  input.addEventListener("blur", () => setTimeout(() => box.classList.add("hidden"), 120));
+}
 
 // ---------- regex validators (ported from the workbook's VBA) ----------
 const RX = {
@@ -826,7 +889,7 @@ function addItemRow(prefill) {
     <td><input class="f-slno" value="${itemCounter}"></td>
     <td><input class="f-desc" style="min-width:160px;" placeholder="Product / service description"></td>
     <td class="col-isserv"><select class="f-isserv"><option value="N">No</option><option value="Y">Yes</option></select></td>
-    <td><input class="f-hsn" maxlength="8" placeholder="e.g. 71023910" list="hsnList"></td>
+    <td><input class="f-hsn" maxlength="8" placeholder="e.g. 71023910"></td>
     <td class="col-bar"><input class="f-bar"></td>
     <td><input class="f-qty" type="number" step="0.001" value="1"></td>
     <td class="col-freeqty"><input class="f-freeqty" type="number" step="0.001" value="0"></td>
@@ -836,17 +899,17 @@ function addItemRow(prefill) {
     <td><input class="f-disc" type="number" step="0.01" value="0"></td>
     <td><input class="f-pretax" type="number" step="0.01" value="0"></td>
     <td><input class="f-taxable" type="number" step="0.01" value="0"></td>
-    <td><input class="f-gstrate" type="number" step="0.01" value="18" list="gstRateList"></td>
+    <td><input class="f-gstrate" type="number" step="0.01" value="1.5" list="gstRateList"></td>
     <td><input class="f-sgst" type="number" step="0.01" value="0"></td>
     <td><input class="f-cgst" type="number" step="0.01" value="0"></td>
     <td><input class="f-igst" type="number" step="0.01" value="0"></td>
-    <td><input class="f-cessrate" type="number" step="0.01" value="0" list="cessRateList"></td>
-    <td><input class="f-cessamt" type="number" step="0.01" value="0"></td>
-    <td><input class="f-cessnonadv" type="number" step="0.01" value="0"></td>
-    <td><input class="f-stcessrate" type="number" step="0.01" value="0"></td>
-    <td><input class="f-stcessamt" type="number" step="0.01" value="0"></td>
-    <td><input class="f-stcessnonadv" type="number" step="0.01" value="0"></td>
-    <td><input class="f-othchrg" type="number" step="0.01" value="0"></td>
+    <td class="col-cess"><input class="f-cessrate" type="number" step="0.01" value="0" list="cessRateList"></td>
+    <td class="col-cess"><input class="f-cessamt" type="number" step="0.01" value="0"></td>
+    <td class="col-cess"><input class="f-cessnonadv" type="number" step="0.01" value="0"></td>
+    <td class="col-cess"><input class="f-stcessrate" type="number" step="0.01" value="0"></td>
+    <td class="col-cess"><input class="f-stcessamt" type="number" step="0.01" value="0"></td>
+    <td class="col-cess"><input class="f-stcessnonadv" type="number" step="0.01" value="0"></td>
+    <td class="col-cess"><input class="f-othchrg" type="number" step="0.01" value="0"></td>
     <td><input class="f-total" type="number" step="0.01" value="0"></td>
     <td class="col-batch"><input class="f-batchname"></td>
     <td class="col-batch"><input class="f-batchexp" placeholder="DD/MM/YYYY"></td>
@@ -855,6 +918,8 @@ function addItemRow(prefill) {
   `;
   populateUnitSelect(tr.querySelector(".f-unit"));
   $("itemsBody").appendChild(tr);
+  attachSuggestions(tr.querySelector(".f-hsn"), HSN_SUGGESTIONS);
+  attachSuggestions(tr.querySelector(".f-desc"), DESC_SUGGESTIONS);
 
   const recalc = () => recalcItemRow(tr);
   ["f-qty", "f-price", "f-disc", "f-gstrate", "f-cessrate", "f-stcessrate"].forEach((cls) => {
@@ -970,6 +1035,7 @@ function applySettings() {
   table.classList.toggle("hide-bar", !isOn("setBarcode"));
   table.classList.toggle("hide-freeqty", !isOn("setFreeQty"));
   table.classList.toggle("hide-batch", !isOn("setBatch"));
+  table.classList.toggle("hide-cess", !isOn("setCess"));
 
   // keep the section nav in sync with which optional cards are visible
   document.querySelectorAll("#sidenav a[data-optional]").forEach((a) => {
@@ -979,7 +1045,7 @@ function applySettings() {
 }
 
 function wireSettings() {
-  ["setRevCharge", "setEcomGstin", "setDispatch", "setShipping", "setIsService", "setBarcode", "setFreeQty", "setBatch", "setExport", "setEwb"].forEach((id) => {
+  ["setRevCharge", "setEcomGstin", "setDispatch", "setShipping", "setIsService", "setBarcode", "setFreeQty", "setBatch", "setExport", "setEwb", "setCess"].forEach((id) => {
     $(id).addEventListener("change", applySettings);
   });
 }
@@ -1317,17 +1383,19 @@ function suggestNextDocNo() {
 
 // ---------- draft autosave / restore ----------
 const DRAFT_KEY = "einvoice_draft_v1";
+// Note: buyer fields (BGstin, BLglNm, etc.) are deliberately NOT included here.
+// The buyer picker should always start blank and force an explicit choice each
+// time the tool is opened, rather than silently remembering the last buyer used.
 const DRAFT_FIELD_IDS = [
   "SupTyp", "DocTyp", "DocNo", "DocDt", "RegRev", "IgstOnIntra", "EcmGstin",
   "SGstin", "SLglNm", "STrdNm", "SAddr1", "SAddr2", "SLoc", "SPin", "SState", "SPh", "SEm",
-  "BGstin", "BLglNm", "BTrdNm", "BPos", "BAddr1", "BAddr2", "BLoc", "BPin", "BState", "BPh", "BEm",
   "DName", "DAddr1", "DAddr2", "DLoc", "DPin", "DState",
   "ShGstin", "ShLglNm", "ShTrdNm", "ShAddr1", "ShAddr2", "ShLoc", "ShPin", "ShState",
   "valDiscount", "valOthChrg", "valRoundOff",
   "ShipBNo", "ShipBDt", "Port", "RefClm", "ForCur", "CntCode", "ExpDuty",
   "TransId", "TransName", "TransMode", "TransDistance", "TransDocNo", "TransDocDt", "VehNo", "VehType"
 ];
-const DRAFT_CHECK_IDS = ["setRevCharge", "setEcomGstin", "setDispatch", "setShipping", "setIsService", "setBarcode", "setFreeQty", "setBatch", "setExport", "setEwb"];
+const DRAFT_CHECK_IDS = ["setRevCharge", "setEcomGstin", "setDispatch", "setShipping", "setIsService", "setBarcode", "setFreeQty", "setBatch", "setExport", "setEwb", "setCess"];
 const ITEM_FIELD_CLASSES = ["f-slno", "f-desc", "f-isserv", "f-hsn", "f-bar", "f-qty", "f-freeqty", "f-unit", "f-price", "f-gross", "f-disc", "f-pretax", "f-taxable", "f-gstrate", "f-sgst", "f-cgst", "f-igst", "f-cessrate", "f-cessamt", "f-cessnonadv", "f-stcessrate", "f-stcessamt", "f-stcessnonadv", "f-othchrg", "f-total", "f-batchname", "f-batchexp", "f-batchwar"];
 
 function collectDraft() {
@@ -1340,7 +1408,7 @@ function collectDraft() {
     ITEM_FIELD_CLASSES.forEach((c) => { const el = tr.querySelector("." + c); if (el) o[c] = el.value; });
     return o;
   });
-  return { fields, checks, items, companyId: $("companyToggle").dataset.selected || "", buyerId: $("buyerSelect").value };
+  return { fields, checks, items, companyId: $("companyToggle").dataset.selected || "" };
 }
 
 function saveDraft() {
@@ -1370,7 +1438,6 @@ function restoreDraft() {
     [...wrap.children].forEach((el) => el.classList && el.classList.toggle("active", el.dataset.id === draft.companyId));
     applySelectedCompany();
   }
-  if (draft.buyerId) $("buyerSelect").value = draft.buyerId;
   applySettings();
   recalcAllTotals();
   return true;
