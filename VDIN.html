@@ -63,6 +63,11 @@
   .card-body{padding:18px;}
   .card.collapsed .card-body{display:none;}
   .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;}
+  details.more-options{margin-top:14px;}
+  details.more-options summary{cursor:pointer;font-size:12.5px;font-weight:600;color:var(--primary);list-style:none;user-select:none;}
+  details.more-options summary::-webkit-details-marker{display:none;}
+  details.more-options summary::before{content:"▸ ";}
+  details.more-options[open] summary::before{content:"▾ ";}
   .field{display:flex;flex-direction:column;gap:5px;}
   .field label{font-size:12px;font-weight:600;color:var(--muted);}
   .field label .req{color:var(--danger);}
@@ -211,30 +216,35 @@
   <div class="card-head" data-toggle="cardDoc"><h2><span class="num">1</span> Document Details</h2><span class="chevron">▾</span></div>
   <div class="card-body">
     <div class="grid">
-      <div class="field"><label>Supply Type code <span class="req">*</span></label>
-        <select id="SupTyp">
-          <option value="B2B">B2B — Business to Business</option>
-          <option value="SEZWP">SEZWP — SEZ with payment</option>
-          <option value="SEZWOP">SEZWOP — SEZ without payment</option>
-          <option value="EXPWP">EXPWP — Export with payment</option>
-          <option value="EXPWOP">EXPWOP — Export without payment</option>
-          <option value="DEXP">DEXP — Deemed export</option>
-        </select><div class="err"></div>
-      </div>
       <div class="field"><label>Document Type <span class="req">*</span></label>
         <select id="DocTyp"><option value="Tax Invoice">Tax Invoice (INV)</option><option value="Credit Note">Credit Note (CRN)</option><option value="Debit Note">Debit Note (DBN)</option></select><div class="err"></div>
       </div>
       <div class="field"><label>Document Number <span class="req">*</span></label><input id="DocNo" maxlength="16" placeholder="e.g. INV/2026/001"><div class="err"></div></div>
       <div class="field"><label>Document Date (DD/MM/YYYY) <span class="req">*</span></label><input id="DocDt" placeholder="13/07/2026"><div class="err"></div></div>
       <div class="field" id="fieldRevCharge" style="display:none;"><label>Reverse Charge</label><select id="RegRev"><option value="">Not applicable</option><option value="Yes">Yes</option><option value="No">No</option></select></div>
-      <div class="field"><label>IGST on Intra-state supply</label><select id="IgstOnIntra"><option value="No">No</option><option value="Yes">Yes</option></select></div>
       <div class="field" id="fieldEcomGstin" style="display:none;"><label>E-commerce GSTIN</label><input id="EcmGstin" maxlength="15" placeholder="optional"><div class="err"></div></div>
     </div>
+    <details class="more-options">
+      <summary>More options (Supply Type, IGST on Intra-state)</summary>
+      <div class="grid" style="margin-top:12px;">
+        <div class="field"><label>Supply Type code <span class="req">*</span></label>
+          <select id="SupTyp">
+            <option value="B2B">B2B — Business to Business</option>
+            <option value="SEZWP">SEZWP — SEZ with payment</option>
+            <option value="SEZWOP">SEZWOP — SEZ without payment</option>
+            <option value="EXPWP">EXPWP — Export with payment</option>
+            <option value="EXPWOP">EXPWOP — Export without payment</option>
+            <option value="DEXP">DEXP — Deemed export</option>
+          </select><div class="err"></div>
+        </div>
+        <div class="field"><label>IGST on Intra-state supply</label><select id="IgstOnIntra"><option value="No">No</option><option value="Yes">Yes</option></select></div>
+      </div>
+    </details>
   </div>
 </div>
 
 <!-- SELLER -->
-<div class="card" id="cardSeller">
+<div class="card collapsed" id="cardSeller">
   <div class="card-head" data-toggle="cardSeller"><h2><span class="num">2</span> Seller Details <span class="pill on" id="sellerPill">from company profile</span></h2><span class="chevron">▾</span></div>
   <div class="card-body">
     <p class="muted-note">Pulled from the company selected above. Edit here if this invoice needs a one-off change (won't affect the saved profile).</p>
@@ -254,7 +264,7 @@
 </div>
 
 <!-- BUYER -->
-<div class="card" id="cardBuyer">
+<div class="card collapsed" id="cardBuyer">
   <div class="card-head" data-toggle="cardBuyer"><h2><span class="num">3</span> Buyer Details</h2><span class="chevron">▾</span></div>
   <div class="card-body">
     <div class="flex-between" style="margin-bottom:12px;">
@@ -341,7 +351,7 @@
 </div>
 
 <!-- VALUE DETAILS -->
-<div class="card" id="cardValue">
+<div class="card collapsed" id="cardValue">
   <div class="card-head" data-toggle="cardValue"><h2><span class="num">7</span> Value Details</h2><span class="chevron">▾</span></div>
   <div class="card-body">
     <p class="muted-note">Auto-summed from the item list. Discount / other charges / round-off can be adjusted manually — Total Invoice Value recalculates.</p>
