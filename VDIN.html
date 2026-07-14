@@ -240,7 +240,7 @@
       <div class="field" id="fieldEcomGstin" style="display:none;"><label>E-commerce GSTIN</label><input id="EcmGstin" maxlength="15" placeholder="optional"><div class="err"></div></div>
     </div>
     <details class="more-options">
-      <summary>More options (Supply Type, IGST on Intra-state)</summary>
+      <summary>More options (Supply Type, IGST on Intra-state, Terms, Due Date, Delivery)</summary>
       <div class="grid" style="margin-top:12px;">
         <div class="field"><label>Supply Type code <span class="req">*</span></label>
           <select id="SupTyp">
@@ -253,15 +253,11 @@
           </select><div class="err"></div>
         </div>
         <div class="field"><label>IGST on Intra-state supply</label><select id="IgstOnIntra"><option value="No">No</option><option value="Yes">Yes</option></select></div>
-      </div>
-    </details>
-    <details class="more-options">
-      <summary>Printed invoice details (Terms, Due Date, Delivery — not part of the e-invoice JSON)</summary>
-      <div class="grid" style="margin-top:12px;">
         <div class="field"><label>Terms</label><input id="pTerms" placeholder="e.g. COD"></div>
         <div class="field"><label>Due Date (DD/MM/YYYY)</label><input id="pDueDate" placeholder="optional"></div>
         <div class="field"><label>Delivery</label><input id="pDelivery" placeholder="e.g. Goods sold at Surat"></div>
       </div>
+      <div class="hint" style="margin-top:8px;">Terms, Due Date, and Delivery are printed on the invoice only — not part of the e-invoice JSON.</div>
     </details>
   </div>
 </div>
@@ -330,13 +326,13 @@
     <div class="table-scroll">
       <table class="items hide-isserv hide-bar hide-freeqty hide-batch hide-cess" id="itemsTable">
         <thead><tr>
-          <th>Sl.No*</th><th>Description</th><th class="col-isserv">Is Service</th><th>HSN*</th><th class="col-bar">Barcode</th>
-          <th>Qty*</th><th class="col-freeqty">Free Qty</th><th>Unit*</th><th>Unit Price*</th><th>Gross Amt*</th>
-          <th>Discount</th><th>Pre-Tax Val</th><th>Taxable Val*</th><th>GST Rate %*</th>
-          <th>Sgst Amt</th><th>Cgst Amt</th><th>Igst Amt</th>
+          <th>Sl.No*</th><th>Description</th><th>HSN*</th><th>Qty*</th><th>Unit*</th><th>Unit Price*</th>
+          <th>Gross Amt*</th><th>Discount</th><th>Pre-Tax Val</th><th>Taxable Val*</th><th>GST Rate %*</th>
+          <th>Sgst Amt</th><th>Cgst Amt</th><th>Igst Amt</th><th>Item Total</th>
+          <th class="col-isserv">Is Service</th><th class="col-bar">Barcode</th><th class="col-freeqty">Free Qty</th>
           <th class="col-cess">Cess Rate %</th><th class="col-cess">Cess Amt</th><th class="col-cess">Cess Non-Adval</th>
           <th class="col-cess">StCess Rate %</th><th class="col-cess">StCess Amt</th><th class="col-cess">StCess Non-Adval</th>
-          <th class="col-cess">Other Chrg</th><th>Item Total</th>
+          <th class="col-cess">Other Chrg</th>
           <th class="col-batch">Batch Name</th><th class="col-batch">Batch Exp Dt</th><th class="col-batch">Warranty Dt</th>
           <th></th>
         </tr></thead>
@@ -699,6 +695,10 @@ function populateUnitSelect(sel) {
   MASTER.units.forEach(([name, code]) => {
     sel.appendChild(new Option(`${code} (${name})`, code));
   });
+  // "Others" (OTH) is the closest fit for carats/diamond-trade units, which
+  // aren't in the official UQC list — default new rows to it instead of
+  // leaving Unit blank, since it's required and OTH beats picking nothing.
+  sel.value = "OTH";
 }
 function populatePortDatalist() {
   const dl = $("portList");
@@ -1228,6 +1228,7 @@ function selectBuyerById(id) {
     // selected buyer's details instead of leaving stale data in the fields.
     ["BGstin", "BLglNm", "BTrdNm", "BAddr1", "BAddr2", "BLoc", "BPin", "BPh", "BEm"].forEach((fid) => { $(fid).value = ""; });
     $("BPos").value = ""; $("BState").value = "";
+    if ($("pDelivery")) $("pDelivery").value = "";
     document.querySelectorAll("#itemsBody tr").forEach(recalcItemRow);
     return;
   }
@@ -1244,7 +1245,22 @@ function selectBuyerById(id) {
   $("BState").value = b.state || "";
   $("BPh").value = b.phone || "";
   $("BEm").value = b.email || "";
+  // Delivery place defaults to the buyer's own city — matches how you've
+  // filled it in on real invoices ("GOODS SOLD & DELIVERED AT <city>").
+  // Still a plain text field, so it can be overwritten by hand afterwards.
+  if ($("pDelivery")) {
+    $("pDelivery").value = b.loc ? ("GOODS SOLD & DELIVERED AT " + b.loc.toUpperCase()) : "";
+  }
   document.querySelectorAll("#itemsBody tr").forEach(recalcItemRow);
+}
+
+// If Terms is COD, the due date is the same as the invoice date — keeps the
+// two fields in sync whenever either one changes.
+function syncDueDateWithTerms() {
+  const terms = ($("pTerms").value || "").trim().toUpperCase();
+  if (terms === "COD") {
+    $("pDueDate").value = $("DocDt").value || "";
+  }
 }
 
 function escapeHtml(s) { return String(s).replace(/[&<>"']/g, (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[m])); }
@@ -1257,11 +1273,8 @@ function addItemRow(prefill) {
   tr.innerHTML = `
     <td><input class="f-slno" value="${itemCounter}"></td>
     <td><input class="f-desc" style="min-width:160px;" placeholder="Product / service description"></td>
-    <td class="col-isserv"><select class="f-isserv"><option value="N">No</option><option value="Y">Yes</option></select></td>
     <td><input class="f-hsn" maxlength="8" placeholder="e.g. 71023910"></td>
-    <td class="col-bar"><input class="f-bar"></td>
     <td><input class="f-qty" type="number" step="0.001" value="1"></td>
-    <td class="col-freeqty"><input class="f-freeqty" type="number" step="0.001" value="0"></td>
     <td><select class="f-unit"></select></td>
     <td><input class="f-price" type="number" step="0.01" value="0"></td>
     <td><input class="f-gross" type="number" step="0.01" value="0"></td>
@@ -1272,6 +1285,10 @@ function addItemRow(prefill) {
     <td><input class="f-sgst" type="number" step="0.01" value="0"></td>
     <td><input class="f-cgst" type="number" step="0.01" value="0"></td>
     <td><input class="f-igst" type="number" step="0.01" value="0"></td>
+    <td><input class="f-total" type="number" step="0.01" value="0"></td>
+    <td class="col-isserv"><select class="f-isserv"><option value="N">No</option><option value="Y">Yes</option></select></td>
+    <td class="col-bar"><input class="f-bar"></td>
+    <td class="col-freeqty"><input class="f-freeqty" type="number" step="0.001" value="0"></td>
     <td class="col-cess"><input class="f-cessrate" type="number" step="0.01" value="0" list="cessRateList"></td>
     <td class="col-cess"><input class="f-cessamt" type="number" step="0.01" value="0"></td>
     <td class="col-cess"><input class="f-cessnonadv" type="number" step="0.01" value="0"></td>
@@ -1279,7 +1296,6 @@ function addItemRow(prefill) {
     <td class="col-cess"><input class="f-stcessamt" type="number" step="0.01" value="0"></td>
     <td class="col-cess"><input class="f-stcessnonadv" type="number" step="0.01" value="0"></td>
     <td class="col-cess"><input class="f-othchrg" type="number" step="0.01" value="0"></td>
-    <td><input class="f-total" type="number" step="0.01" value="0"></td>
     <td class="col-batch"><input class="f-batchname"></td>
     <td class="col-batch"><input class="f-batchexp" placeholder="DD/MM/YYYY"></td>
     <td class="col-batch"><input class="f-batchwar" placeholder="DD/MM/YYYY"></td>
@@ -1874,10 +1890,10 @@ function renderVamaInvoiceHtml(d) {
     .grand-total .amt{font-size:15px;font-weight:700;color:#2b3a67;margin-top:4px;}
     .declaration{font-size:8px;color:#555;line-height:1.5;padding:8px 14px;border-top:1px solid #c7cbd6;page-break-inside:avoid;background:#fafbfc;}
     .sig-row{display:flex;border-top:1px solid #c7cbd6;page-break-inside:avoid;}
-    .sig-row > div{flex:1;padding:20px 14px 10px;}
+    .sig-row > div{flex:1;padding:44px 14px 10px;}
     .sig-row > div:first-child{border-right:1px solid #d7dae2;color:#555;}
     .sig-block{text-align:right;}
-    .sig-line{border-top:1px solid #999;margin:18px 0 4px 35%;}
+    .sig-line{border-top:1px solid #999;margin:38px 0 4px 35%;}
   </style></head><body>
     <div class="letterhead-space"></div>
     <div class="inv-wrap">
@@ -2038,10 +2054,10 @@ function renderDivineInvoiceHtml(d) {
     .grand-total .amt{font-size:15px;font-weight:700;color:#2b3a67;margin-top:4px;}
     .declaration{font-size:8px;color:#555;line-height:1.5;padding:8px 14px;border-top:1px solid #c7cbd6;page-break-inside:avoid;background:#fafbfc;}
     .sig-row{display:flex;border-top:1px solid #c7cbd6;page-break-inside:avoid;}
-    .sig-row > div{flex:1;padding:20px 14px 10px;}
+    .sig-row > div{flex:1;padding:44px 14px 10px;}
     .sig-row > div:first-child{border-right:1px solid #d7dae2;color:#555;}
     .sig-block{text-align:right;}
-    .sig-line{border-top:1px solid #999;margin:18px 0 4px 35%;}
+    .sig-line{border-top:1px solid #999;margin:38px 0 4px 35%;}
   </style></head><body>
     <div class="letterhead-space"></div>
     <div class="inv-wrap">
@@ -2161,6 +2177,7 @@ function loadSampleInvoice() {
   $("DocNo").value = "INV-0001";
   $("DocDt").value = fmtDateToday();
   if (!$("pTerms").value.trim()) $("pTerms").value = "COD";
+  syncDueDateWithTerms();
   $("RegRev").value = "No";
   $("IgstOnIntra").value = "No";
 
@@ -2197,6 +2214,7 @@ function loadSampleInvoice() {
     $("BPos").value = otherCompany.state || "";
     $("BPh").value = otherCompany.phone || "";
     $("BEm").value = otherCompany.email || "";
+    $("pDelivery").value = otherCompany.loc ? ("GOODS SOLD & DELIVERED AT " + otherCompany.loc.toUpperCase()) : "";
   }
 
   $("itemsBody").innerHTML = "";
@@ -2282,6 +2300,12 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     document.querySelectorAll("#itemsBody tr").forEach(recalcItemRow);
   });
+
+  // Terms of COD means due date = invoice date; keep them in sync whenever
+  // either field changes.
+  $("pTerms").addEventListener("input", syncDueDateWithTerms);
+  $("DocDt").addEventListener("input", syncDueDateWithTerms);
+
   ["SState", "BPos", "BState", "IgstOnIntra"].forEach((id) => {
     $(id).addEventListener("change", () => {
       document.querySelectorAll("#itemsBody tr").forEach(recalcItemRow);
@@ -2307,8 +2331,10 @@ document.addEventListener("DOMContentLoaded", () => {
     itemCounter = 0;
     ["BGstin", "BLglNm", "BTrdNm", "BAddr1", "BAddr2", "BLoc", "BPin", "BPh", "BEm"].forEach((id) => $(id).value = "");
     $("BPos").value = ""; $("BState").value = ""; $("buyerSearch").value = "";
+    $("pDelivery").value = "";
     $("DocNo").value = suggestNextDocNo();
     $("DocDt").value = fmtDateToday();
+    syncDueDateWithTerms();
     addItemRow();
     recalcAllTotals();
     $("statusMsg").textContent = "Ready for a new invoice.";
@@ -2345,6 +2371,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!$("DocNo").value.trim()) $("DocNo").value = suggestNextDocNo();
     if (!$("DocDt").value.trim()) $("DocDt").value = fmtDateToday();
     if (!$("pTerms").value.trim()) $("pTerms").value = "COD";
+    syncDueDateWithTerms();
   }
   if (document.querySelectorAll("#itemsBody tr").length === 0) addItemRow();
   recalcAllTotals();
