@@ -21,6 +21,9 @@
 
   header{background:linear-gradient(135deg,var(--primary) 0%,var(--primary-dark) 100%);color:#fff;padding:16px 22px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;position:sticky;top:0;z-index:60;box-shadow:0 2px 14px rgba(0,0,0,.45);}
   .header-spacer{width:40px;flex:none;}
+  .header-clock{flex:none;font-size:11px;line-height:1.35;color:rgba(255,255,255,.85);min-width:150px;white-space:nowrap;}
+  .header-clock .hc-time{font-weight:700;font-size:14px;color:#fff;letter-spacing:.02em;}
+  .header-clock .hc-date{font-weight:500;}
   .company-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;flex:1;justify-content:center;}
   .company-toggle{display:flex;gap:10px;flex-wrap:wrap;}
   .profile-icon{width:40px;height:40px;flex:none;border-radius:50%;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.35);color:#fff;font-size:18px;padding:0;display:flex;align-items:center;justify-content:center;cursor:pointer;}
@@ -97,10 +100,12 @@
 
   /* click-to-fill suggestion dropdown, used for HSN + Description fields
      instead of native <datalist> (unreliable across browsers) */
-  .suggest-box{position:absolute;z-index:200;background:var(--surface-2);border:1px solid var(--border);border-radius:8px;box-shadow:var(--shadow-md);max-height:220px;overflow-y:auto;font-size:12.5px;}
+  .suggest-box{position:absolute;z-index:200;background:var(--surface-2);border:1px solid var(--border);border-radius:8px;box-shadow:var(--shadow-md);max-height:280px;overflow-y:auto;overscroll-behavior:contain;font-size:12.5px;}
   .suggest-box.hidden{display:none;}
   .suggest-item{padding:7px 10px;cursor:pointer;color:var(--text);white-space:nowrap;}
   .suggest-item:hover{background:var(--primary-light);}
+  #buyerSearch::selection{background:rgba(255,255,255,.14);color:var(--muted);}
+  #buyerSearch::-moz-selection{background:rgba(255,255,255,.14);color:var(--muted);}
   .item-remove{background:var(--surface-2);border:1px solid var(--danger);color:var(--danger);border-radius:6px;padding:4px 9px;cursor:pointer;font-size:12px;line-height:1;}
   .item-remove:hover{background:rgba(248,113,113,.14);}
 
@@ -126,6 +131,26 @@
 
   .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.65);display:flex;align-items:center;justify-content:center;z-index:100;}
   .modal-overlay.hidden{display:none;}
+
+  .pw-gate{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;
+    background:radial-gradient(circle at 50% 32%, #1c2030 0%, var(--bg) 68%);}
+  .pw-gate.hidden{display:none;}
+  .pw-card{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:36px 34px 30px;
+    box-shadow:var(--shadow-md);width:min(300px,88vw);text-align:center;animation:pwIn .3s ease-out;}
+  @keyframes pwIn{from{opacity:0;transform:translateY(10px) scale(.96);}to{opacity:1;transform:none;}}
+  .pw-card.shake{animation:pwShake .32s;}
+  @keyframes pwShake{0%,100%{transform:translateX(0);}20%{transform:translateX(-7px);}40%{transform:translateX(6px);}60%{transform:translateX(-4px);}80%{transform:translateX(3px);}}
+  .pw-badge{width:54px;height:54px;border-radius:50%;background:var(--primary-light);color:var(--primary-dark);
+    display:flex;align-items:center;justify-content:center;font-size:23px;margin:0 auto 16px;}
+  .pw-title{font-size:19px;font-weight:800;color:var(--text);letter-spacing:.06em;margin-bottom:4px;}
+  .pw-sub{font-size:12.5px;color:var(--muted);margin-bottom:22px;}
+  .pw-card input{width:100%;box-sizing:border-box;margin-bottom:14px;padding:12px 14px;border-radius:11px;
+    border:1px solid var(--border);background:var(--surface-2);color:var(--text);font-size:15px;text-align:center;
+    letter-spacing:.12em;transition:border-color .15s,box-shadow .15s;}
+  .pw-card input::placeholder{letter-spacing:normal;color:var(--muted);}
+  .pw-card input:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-light);}
+  .pw-card button{width:100%;justify-content:center;padding:11px 15px;font-size:14px;border-radius:11px;}
+  .pw-err{color:var(--danger);font-size:12.5px;margin-top:14px;}
   .modal{background:var(--surface);color:var(--text);border:1px solid var(--border);border-radius:var(--radius);width:min(640px,92vw);max-height:88vh;overflow:auto;padding:22px;box-shadow:var(--shadow-md);animation:modalIn .15s ease-out;}
   @keyframes modalIn{from{opacity:0;transform:translateY(6px) scale(.98);}to{opacity:1;transform:none;}}
   .modal h3{margin-top:0;}
@@ -143,13 +168,24 @@
   @media (max-width:900px){
     .app-shell{padding:16px 12px 80px;}
   }
-  @media (max-width:700px){ .header-spacer{display:none;} header{justify-content:space-between;} }
+  @media (max-width:700px){ .header-clock{display:none;} header{justify-content:space-between;} }
 </style>
 </head>
 <body>
 
+<div class="pw-gate" id="pwGate">
+  <div class="pw-card" id="pwCard">
+    <div class="pw-badge">🔒</div>
+    <div class="pw-title">eINV</div>
+    <div class="pw-sub">Enter password to continue</div>
+    <input type="password" id="pwInput" placeholder="Password" autocomplete="off">
+    <button class="primary" id="pwSubmit">Unlock</button>
+    <div class="pw-err" id="pwErr" style="display:none;">Incorrect password — try again.</div>
+  </div>
+</div>
+
 <header>
-  <div class="header-spacer"></div>
+  <div class="header-clock" id="headerClock"></div>
   <div class="company-bar">
     <div class="company-toggle" id="companyToggle"></div>
   </div>
@@ -367,7 +403,7 @@
   <button class="success" id="btnGenerate">Generate JSON</button>
   <button id="btnPrintInvoice">Print</button>
   <button id="btnLoadSample">Load sample invoice</button>
-  <button id="btnReset">New invoice</button>
+  <button id="btnReset">Reset</button>
   <span id="statusMsg" style="font-size:13px;color:var(--muted);"></span>
 </div>
 
@@ -491,6 +527,89 @@ function attachSuggestions(input, items, onSelect) {
   }
   input.addEventListener("focus", render);
   input.addEventListener("input", render);
+  input.addEventListener("blur", () => setTimeout(() => box.classList.add("hidden"), 120));
+}
+
+// Search-as-you-type box with inline "ghost" autocomplete (like a browser
+// address bar): as soon as the typed text is a prefix of a known item's
+// name, the rest of that name is appended and highlighted (via ::selection
+// styling) so it reads as a light suggestion. Pressing Enter accepts it;
+// continuing to type simply replaces the highlighted part, same as normal
+// text-selection behavior. A click-to-browse dropdown (matching anywhere in
+// the name, not just a prefix) is still offered underneath for browsing.
+// `getItems` returns an array of {value,label,id} objects, evaluated fresh
+// on every keystroke/focus so it reflects live data.
+function attachAutocomplete(input, getItems, onSelect) {
+  const box = document.createElement("div");
+  box.className = "suggest-box hidden";
+  document.body.appendChild(box);
+  let ghostItem = null; // the item currently ghost-suggested inline, if any
+
+  function position() {
+    const r = input.getBoundingClientRect();
+    box.style.left = r.left + window.scrollX + "px";
+    box.style.top = r.bottom + window.scrollY + 2 + "px";
+    box.style.width = Math.max(r.width, 220) + "px";
+  }
+
+  function renderDropdown(typed) {
+    const list = getItems() || [];
+    const q = typed.trim().toLowerCase();
+    const matches = list.filter((it) => !q || it.label.toLowerCase().includes(q) || it.value.toLowerCase().includes(q));
+    if (matches.length === 0) { box.classList.add("hidden"); return; }
+    box.innerHTML = "";
+    matches.slice(0, 20).forEach((it) => {
+      const row = document.createElement("div");
+      row.className = "suggest-item";
+      row.textContent = it.label;
+      row.addEventListener("mousedown", (e) => {
+        e.preventDefault();
+        input.value = it.value;
+        ghostItem = null;
+        box.classList.add("hidden");
+        onSelect(it);
+      });
+      box.appendChild(row);
+    });
+    position();
+    box.classList.remove("hidden");
+  }
+
+  function applyGhost(typed) {
+    ghostItem = null;
+    if (!typed) return;
+    const list = getItems() || [];
+    const match = list.find((it) => it.value.toLowerCase().startsWith(typed.toLowerCase()));
+    if (match && match.value.length > typed.length) {
+      input.value = typed + match.value.slice(typed.length);
+      input.setSelectionRange(typed.length, match.value.length);
+      ghostItem = match;
+    }
+  }
+
+  input.addEventListener("input", () => {
+    // By the time "input" fires, the browser has already applied the
+    // keystroke on top of any prior ghost-selected text, so input.value
+    // here is exactly what the user intends to have typed so far.
+    const typed = input.value;
+    renderDropdown(typed);
+    applyGhost(typed);
+  });
+  input.addEventListener("focus", () => renderDropdown(input.value));
+  input.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" && ghostItem) {
+      e.preventDefault();
+      const it = ghostItem;
+      input.value = it.value;
+      input.setSelectionRange(input.value.length, input.value.length);
+      box.classList.add("hidden");
+      ghostItem = null;
+      onSelect(it);
+    } else if (e.key === "Escape") {
+      ghostItem = null;
+      box.classList.add("hidden");
+    }
+  });
   input.addEventListener("blur", () => setTimeout(() => box.classList.add("hidden"), 120));
 }
 
@@ -754,16 +873,16 @@ const SEED_BUYERS = [
   {
     id: "gehna_by_luthra_jewels",
     name: "Gehna By Luthra Jewels",
-    gstin: "03ABHPL0108N1ZX",
-    legalName: "Gehna By Luthra Jewels",
+    gstin: "03AAMCG7135P1Z5",
+    legalName: "Gehna By Luthra Jewels Private Limited",
     tradeName: "Gehna By Luthra Jewels",
     pos: "03",
-    addr1: "B8/530, Gehna By Luthra Jewels",
-    addr2: "Nehru Gate",
+    addr1: "Police Line Road, Luthra Jewellery House",
+    addr2: "Nehru Gate, Batala, Gurdaspur",
     loc: "Batala, Gurdaspur",
     pin: "143505",
     state: "03",
-    phone: "",
+    phone: "9815076912",
     email: ""
   },
   {
@@ -780,6 +899,261 @@ const SEED_BUYERS = [
     state: "27",
     phone: "+91 9820052423",
     email: ""
+  },
+  {
+    id: "rosin_jewels_pvt_ltd",
+    name: "Rosin Jewels Pvt Ltd",
+    gstin: "27AAFCR6478P1ZF",
+    legalName: "Rosin Jewels Pvt Ltd",
+    tradeName: "",
+    pos: "27",
+    addr1: "EC* 8010-D 1, Bharat Diamond Bourse",
+    addr2: "Bandra Kurla Complex",
+    loc: "Bandra East, Mumbai",
+    pin: "400051",
+    state: "27",
+    phone: "",
+    email: ""
+  },
+  {
+    id: "romil_impex",
+    name: "Romil Impex",
+    gstin: "27AACCR7499B1Z4",
+    legalName: "Romil Impex",
+    tradeName: "",
+    pos: "27",
+    addr1: "BW* 5011, Bharat Diamond Bourse",
+    addr2: "Bandra Kurla Complex",
+    loc: "Bandra East, Mumbai",
+    pin: "400051",
+    state: "27",
+    phone: "+91 9821256519",
+    email: ""
+  },
+  {
+    id: "g_k_sons",
+    name: "G K Sons",
+    gstin: "27AANPK7603A1ZX",
+    legalName: "G K Sons",
+    tradeName: "",
+    pos: "27",
+    addr1: "2nd Floor, 245, Panchratna",
+    addr2: "Mama Parmanand Marg, Opera House",
+    loc: "Mumbai City",
+    pin: "400004",
+    state: "27",
+    phone: "",
+    email: ""
+  },
+  {
+    id: "maa_impex",
+    name: "Maa Impex",
+    gstin: "24AJZPJ1636P1ZH",
+    legalName: "Maa Impex",
+    tradeName: "",
+    pos: "24",
+    addr1: "B, 142 Mahalaxmi Society",
+    addr2: "Yogi Chowk, Varachha",
+    loc: "Surat, Gujarat",
+    pin: "395006",
+    state: "24",
+    phone: "",
+    email: ""
+  },
+  {
+    id: "vavisha_gems",
+    name: "Vavisha Gems",
+    gstin: "27AACFV2159B1ZF",
+    legalName: "Vavisha Gems",
+    tradeName: "",
+    pos: "27",
+    addr1: "GW* 6110, Bharat Diamond Bourse",
+    addr2: "Bandra Kurla Complex",
+    loc: "Bandra East, Mumbai",
+    pin: "400051",
+    state: "27",
+    phone: "",
+    email: ""
+  },
+  {
+    id: "hva_diamond",
+    name: "Hva Diamond",
+    gstin: "24AFHPJ2769M1Z2",
+    legalName: "Hva Diamond",
+    tradeName: "",
+    pos: "24",
+    addr1: "Surya Kiran Apt",
+    addr2: "St. Xavier's School, Ghod Dod Road",
+    loc: "Surat, Gujarat",
+    pin: "395007",
+    state: "24",
+    phone: "",
+    email: ""
+  },
+  {
+    id: "mkm_diamonds_pvt_ltd",
+    name: "MKM Diamonds Private Limited",
+    gstin: "27AACCE1920A1ZD",
+    legalName: "MKM Diamonds Private Limited",
+    tradeName: "",
+    pos: "27",
+    addr1: "BC* 4011, Bharat Diamond Bourse",
+    addr2: "Bandra Kurla Complex",
+    loc: "Bandra East, Mumbai",
+    pin: "400051",
+    state: "27",
+    phone: "",
+    email: ""
+  },
+  {
+    id: "rajharsh_diam",
+    name: "Rajharsh Diam",
+    gstin: "24ABDPV6536A1ZU",
+    legalName: "Rajharsh Diam",
+    tradeName: "",
+    pos: "24",
+    addr1: "407, Vrundavan Chembers",
+    addr2: "Bhojabhai Tekra, Mahidharpura",
+    loc: "Surat",
+    pin: "395003",
+    state: "24",
+    phone: "",
+    email: ""
+  },
+  {
+    id: "epitome_jewels",
+    name: "Epitome Jewels",
+    gstin: "27AAJFE9258M1ZO",
+    legalName: "Epitome Jewels",
+    tradeName: "",
+    pos: "27",
+    addr1: "12, D, Crystal, 36, Altamount Road",
+    addr2: "Cumballa Hill",
+    loc: "Mumbai",
+    pin: "400026",
+    state: "27",
+    phone: "9820974973",
+    email: ""
+  },
+  {
+    id: "arun_joy_arakkal",
+    name: "Arun Joy Arakkal",
+    gstin: "",
+    legalName: "Arun Joy Arakkal",
+    tradeName: "",
+    pos: "32",
+    addr1: "Arakkal House, Vanhode Post",
+    addr2: "Kanjirangad, Vanhode",
+    loc: "Wayanad",
+    pin: "670731",
+    state: "32",
+    phone: "9121529673",
+    email: ""
+  },
+  {
+    id: "kejal_exports",
+    name: "Kejal Exports",
+    gstin: "27AHOPA2657A1ZO",
+    legalName: "Kejal Exports",
+    tradeName: "",
+    pos: "27",
+    addr1: "1st Floor, Flat No-4, 38, Walkeshwar House",
+    addr2: "Sital Baug, Walkeshwar Road",
+    loc: "Mumbai",
+    pin: "400006",
+    state: "27",
+    phone: "",
+    email: ""
+  },
+  {
+    id: "ghanshyam_impex",
+    name: "Ghanshyam Impex",
+    gstin: "27AAIFG8790K1ZO",
+    legalName: "Ghanshyam Impex",
+    tradeName: "",
+    pos: "27",
+    addr1: "FW-3110, Bharat Diamond Bourse",
+    addr2: "BKC, Bandra East",
+    loc: "Mumbai",
+    pin: "400051",
+    state: "27",
+    phone: "9924611461",
+    email: ""
+  },
+  {
+    id: "n_v_diamonds",
+    name: "N V Diamonds",
+    gstin: "27AAPFN8114R1ZE",
+    legalName: "N V Diamonds",
+    tradeName: "",
+    pos: "27",
+    addr1: "B-39/40, Block B Tara Baug Estate",
+    addr2: "297, Charni Road, Opera House",
+    loc: "Mumbai",
+    pin: "400004",
+    state: "27",
+    phone: "",
+    email: ""
+  },
+  {
+    id: "vrinjal_diam",
+    name: "Vrinjal Diam",
+    gstin: "24ACXPS5648B1Z6",
+    legalName: "Vrinjal Diam",
+    tradeName: "",
+    pos: "24",
+    addr1: "3rd Floor, 6/1425/301, Veer Ashish",
+    addr2: "Thobha Sheri, Mahidharpura",
+    loc: "Surat",
+    pin: "395003",
+    state: "24",
+    phone: "+91 9825119143",
+    email: ""
+  },
+  {
+    id: "gautam_gems_limited",
+    name: "Gautam Gems Limited",
+    gstin: "24AAFCG5576R1ZV",
+    legalName: "Gautam Gems Limited",
+    tradeName: "",
+    pos: "24",
+    addr1: "3rd Floor, 301, Sumukh Super Compound",
+    addr2: "Vasta Devadi Road",
+    loc: "Surat",
+    pin: "395004",
+    state: "24",
+    phone: "+91 9376495444",
+    email: ""
+  },
+  {
+    id: "dharmachakra_diamonds",
+    name: "Dharmachakra Diamonds",
+    gstin: "24BPWPP7208D1ZM",
+    legalName: "Dharmachakra Diamonds",
+    tradeName: "",
+    pos: "24",
+    addr1: "201, Darshan Complex",
+    addr2: "Rampura Main Road",
+    loc: "Surat",
+    pin: "395003",
+    state: "24",
+    phone: "+91 9428396297",
+    email: ""
+  },
+  {
+    id: "parshwanath_diamonds_llp",
+    name: "Parshwanath Diamonds LLP",
+    gstin: "27AASFP9131B1Z3",
+    legalName: "Parshwanath Diamonds LLP",
+    tradeName: "",
+    pos: "27",
+    addr1: "4th Floor, 41, Ekadashi Apartment",
+    addr2: "Parekh Road, Prarthna Samaj",
+    loc: "Mumbai City",
+    pin: "400004",
+    state: "27",
+    phone: "9870030249",
+    email: ""
   }
 ];
 
@@ -795,6 +1169,17 @@ function loadBuyers() {
     const wasDismissed = dismissed.includes(seed.id);
     if (!exists && !wasDismissed) { list.push({ ...seed }); changed = true; }
   });
+
+  // One-time correction: "Gehna By Luthra Jewels" was originally seeded with
+  // an incorrect GSTIN (03ABHPL0108N1ZX). The real one — confirmed from an
+  // actual invoice to this buyer — is 03AAMCG7135P1Z5, with a fuller legal
+  // name and address. If a browser already saved the old, wrong record,
+  // replace it with the corrected seed data so it doesn't keep getting used.
+  const gehnaIdx = list.findIndex((b) => b.id === "gehna_by_luthra_jewels" && b.gstin === "03ABHPL0108N1ZX");
+  if (gehnaIdx >= 0) {
+    const correctedSeed = SEED_BUYERS.find((s) => s.id === "gehna_by_luthra_jewels");
+    if (correctedSeed) { list[gehnaIdx] = { ...correctedSeed }; changed = true; }
+  }
 
   // De-duplicate: if the same buyer (matched by GSTIN) ended up saved twice
   // under different ids — e.g. from the old "Save this buyer" button — keep
@@ -828,11 +1213,13 @@ function markBuyerSeedDismissed(id) {
 // Suggestion items for the buyer search box — built fresh on every render
 // so it always reflects the current saved-buyer list.
 function buyerSuggestionItems() {
-  return loadBuyers().map((b) => ({
-    value: b.name || b.gstin || "Unnamed buyer",
-    label: (b.name || b.gstin || "Unnamed buyer") + (b.gstin ? " — " + b.gstin : ""),
-    id: b.id
-  }));
+  return loadBuyers()
+    .map((b) => ({
+      value: b.name || b.gstin || "Unnamed buyer",
+      label: (b.name || b.gstin || "Unnamed buyer") + (b.gstin ? " — " + b.gstin : ""),
+      id: b.id
+    }))
+    .sort((a, b) => a.value.localeCompare(b.value, undefined, { sensitivity: "base" }));
 }
 
 function selectBuyerById(id) {
@@ -1376,11 +1763,10 @@ function restoreDraft() {
 
   Object.entries(draft.fields || {}).forEach(([id, v]) => { const el = $(id); if (el) el.value = v; });
   Object.entries(draft.checks || {}).forEach(([id, v]) => { const el = $(id); if (el) el.checked = v; });
-  if (draft.items && draft.items.length) {
-    $("itemsBody").innerHTML = "";
-    itemCounter = 0;
-    draft.items.forEach((it) => addItemRow(it));
-  }
+  // Deliberately NOT restoring draft.items — every fresh page load should
+  // start with a clean, empty item list, even if a previous unsaved session
+  // had items in progress. (Everything else — seller, settings, document
+  // details — still restores as before.)
   if (draft.companyId) {
     const wrap = $("companyToggle");
     wrap.dataset.selected = draft.companyId;
@@ -1438,7 +1824,7 @@ function gatherInvoiceData() {
   return { g, company, rows, totalQty, totalAmt, stateName, sellerPan, buyerPan, hsnCode, sgst, cgst, igst, totInv, gstRate, halfRate, amountWords };
 }
 
-// ---- Vama Exports template (Performa Invoice layout) ----
+// ---- Vama Exports template (Tax Invoice layout) ----
 function renderVamaInvoiceHtml(d) {
   const { g, company, rows, totalQty, totalAmt, stateName, sellerPan, buyerPan, hsnCode, sgst, cgst, igst, totInv, gstRate, halfRate, amountWords } = d;
   const esc = escP, num = numP, numAlways = numAlwaysP;
@@ -1450,135 +1836,146 @@ function renderVamaInvoiceHtml(d) {
       <td class="num">${numAlways(r.price)}</td>
       <td class="num">${numAlways(r.total)}</td>
     </tr>`).join("");
-  const blankRowsHtml = "";
 
   return `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Invoice ${esc(g("DocNo"))}</title>
   <style>
     @page { margin: 10mm 12mm; size: A4; }
     *{box-sizing:border-box;}
     html,body{height:auto;}
-    body{font-family:Arial,Helvetica,sans-serif;color:#111;font-size:10.5px;margin:0;line-height:1.3;}
+    body{font-family:Arial,Helvetica,sans-serif;color:#1a1a1a;font-size:10.5px;margin:0;line-height:1.42;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
     .letterhead-space{height:100px;}
-    table.frame{width:100%;border-collapse:collapse;border:1.5px solid #000;page-break-inside:avoid;}
-    table.frame > tbody > tr > td{border:1px solid #000;vertical-align:top;padding:4px 7px;}
-    .hdr{text-align:center;font-weight:700;font-size:13px;letter-spacing:.03em;}
-    .meta-table{width:100%;border-collapse:collapse;font-size:10.5px;}
-    .meta-table td{border:none;padding:0;}
-    .meta-table td.k{width:38%;font-weight:600;}
-    table.items{width:100%;border-collapse:collapse;font-size:10.5px;margin-top:6px;page-break-inside:avoid;}
-    table.items th,table.items td{border:1px solid #000;padding:3px 6px;text-align:left;}
-    table.items th{background:#f0f0f0;font-weight:700;}
+    .inv-wrap{border:1px solid #c7cbd6;}
+    .inv-title{text-align:center;font-family:Georgia,'Times New Roman',serif;font-weight:700;font-size:17px;letter-spacing:.12em;color:#2b3a67;padding:9px 0 8px;border-bottom:2px solid #2b3a67;}
+    .inv-topgrid{display:flex;page-break-inside:avoid;}
+    .inv-topgrid > div{flex:1;padding:9px 14px;}
+    .inv-topgrid > div:first-child{border-right:1px solid #d7dae2;}
+    .lbl{font-size:8.5px;font-weight:700;letter-spacing:.08em;color:#6b7280;text-transform:uppercase;margin-bottom:4px;}
+    .buyer-name{font-size:12px;font-weight:700;color:#1a1a1a;margin-bottom:2px;}
+    .addr{color:#333;margin-bottom:5px;}
+    .kv{display:flex;justify-content:space-between;gap:8px;padding:1.5px 0;border-bottom:1px dotted #e2e4ea;}
+    .kv span:first-child{color:#6b7280;}
+    .kv span:last-child{font-weight:600;text-align:right;}
+    table.items{width:100%;border-collapse:collapse;font-size:10px;border-top:1px solid #c7cbd6;page-break-inside:avoid;}
+    table.items th{background:#f3f4f8;color:#2b3a67;font-weight:700;font-size:9px;letter-spacing:.04em;text-transform:uppercase;padding:6px 8px;border-bottom:1.5px solid #2b3a67;text-align:left;}
+    table.items td{padding:5px 8px;border-bottom:1px solid #e2e4ea;}
     table.items td.c{text-align:center;}
     table.items td.num, table.items th.num{text-align:right;}
-    .totrow td{font-weight:700;}
-    table.words-tax{width:100%;border-collapse:collapse;font-size:10.5px;margin-top:6px;page-break-inside:avoid;}
-    table.words-tax td{border:1px solid #000;padding:5px 7px;vertical-align:top;}
+    .totrow td{font-weight:700;border-top:1.5px solid #2b3a67;border-bottom:none;background:#f8f9fb;}
+    .mid-grid{display:flex;border-top:1px solid #c7cbd6;page-break-inside:avoid;}
+    .mid-grid > div{flex:1;padding:9px 14px;}
+    .mid-grid > div:first-child{border-right:1px solid #d7dae2;}
     table.tax-mini{width:100%;border-collapse:collapse;}
-    table.tax-mini td{border:none;padding:0;}
-    table.tax-mini td.amt{text-align:right;}
-    .declaration{font-size:8.5px;color:#222;line-height:1.35;padding:6px 7px;border:1px solid #000;border-top:none;page-break-inside:avoid;}
-    table.sig{width:100%;border-collapse:collapse;font-size:10.5px;page-break-inside:avoid;}
-    table.sig td{border:1px solid #000;border-top:none;padding:14px 7px 6px;vertical-align:bottom;}
-    @media print{ .letterhead-space{height:100px;} }
+    table.tax-mini td{padding:1.5px 0;border:none;}
+    table.tax-mini td.amt{text-align:right;font-weight:600;}
+    .pay-decl-grid{display:flex;border-top:1px solid #c7cbd6;page-break-inside:avoid;}
+    .pay-decl-grid > div{flex:1;padding:9px 14px;}
+    .pay-decl-grid > div:first-child{border-right:1px solid #d7dae2;}
+    .grand-total{text-align:right;}
+    .grand-total .amt{font-size:15px;font-weight:700;color:#2b3a67;margin-top:4px;}
+    .declaration{font-size:8px;color:#555;line-height:1.5;padding:8px 14px;border-top:1px solid #c7cbd6;page-break-inside:avoid;background:#fafbfc;}
+    .sig-row{display:flex;border-top:1px solid #c7cbd6;page-break-inside:avoid;}
+    .sig-row > div{flex:1;padding:20px 14px 10px;}
+    .sig-row > div:first-child{border-right:1px solid #d7dae2;color:#555;}
+    .sig-block{text-align:right;}
+    .sig-line{border-top:1px solid #999;margin:18px 0 4px 35%;}
   </style></head><body>
     <div class="letterhead-space"></div>
-    <table class="frame">
-      <tr><td colspan="2" class="hdr">PERFORMA INVOICE</td></tr>
-      <tr>
-        <td style="width:55%;">
-          <div style="font-weight:600;">TO,</div>
-          <div style="font-weight:700;">${esc(g("BLglNm") || g("BTrdNm"))}</div>
-          ${g("BTrdNm") && g("BTrdNm") !== g("BLglNm") ? `<div>${esc(g("BTrdNm"))}</div>` : ""}
-          <div>${esc(g("BAddr1"))}${g("BAddr2") ? ", " + esc(g("BAddr2")) : ""}</div>
-          <div>${esc(g("BLoc"))}${g("BPin") ? " - " + esc(g("BPin")) : ""}</div>
-          <br>
-          <table class="meta-table">
-            <tr><td class="k">PAN NO:</td><td>${esc(buyerPan)}</td></tr>
-            <tr><td class="k">GST NO:</td><td>${esc(g("BGstin"))}</td></tr>
-            <tr><td class="k">TELE:</td><td>${esc(g("BPh"))}</td></tr>
-          </table>
-        </td>
-        <td style="width:45%;">
-          <table class="meta-table">
-            <tr><td class="k">INVOICE NO:</td><td>${esc(g("DocNo"))}</td></tr>
-            <tr><td class="k">DATE:</td><td>${esc(g("DocDt"))}</td></tr>
-            <tr><td class="k">TERMS:</td><td>${esc(g("pTerms"))}</td></tr>
-            <tr><td class="k">DUE DATE:</td><td>${esc(g("pDueDate"))}</td></tr>
-            <tr><td class="k">OUR STATE:</td><td>${esc(stateName)}${stateName ? " CODE " + esc(g("SState")) : ""}</td></tr>
-            <tr><td class="k">DELIVERY:</td><td>${esc(g("pDelivery"))}</td></tr>
-            <tr><td class="k">GST NO:</td><td>${esc(g("SGstin"))}</td></tr>
-            <tr><td class="k">PAN NO:</td><td>${esc(sellerPan)}</td></tr>
-            <tr><td class="k">HSN CODE:</td><td>${esc(hsnCode)}</td></tr>
-          </table>
-        </td>
-      </tr>
-    </table>
+    <div class="inv-wrap">
+      <div class="inv-title">Tax Invoice</div>
+      <div class="inv-topgrid">
+        <div>
+          <div class="lbl">Bill To</div>
+          <div class="buyer-name">${esc(g("BLglNm") || g("BTrdNm"))}</div>
+          ${g("BTrdNm") && g("BTrdNm") !== g("BLglNm") ? `<div class="addr">${esc(g("BTrdNm"))}</div>` : ""}
+          <div class="addr">${esc(g("BAddr1"))}${g("BAddr2") ? ", " + esc(g("BAddr2")) : ""}</div>
+          <div class="addr">${esc(g("BLoc"))}${g("BPin") ? " - " + esc(g("BPin")) : ""}</div>
+          <div class="kv"><span>PAN No</span><span>${esc(buyerPan)}</span></div>
+          <div class="kv"><span>GST No</span><span>${esc(g("BGstin"))}</span></div>
+          <div class="kv"><span>Tele</span><span>${esc(g("BPh"))}</span></div>
+        </div>
+        <div>
+          <div class="lbl">Invoice Details</div>
+          <div class="kv"><span>Invoice No</span><span>${esc(g("DocNo"))}</span></div>
+          <div class="kv"><span>Date</span><span>${esc(g("DocDt"))}</span></div>
+          <div class="kv"><span>Terms</span><span>${esc(g("pTerms"))}</span></div>
+          <div class="kv"><span>Due Date</span><span>${esc(g("pDueDate"))}</span></div>
+          <div class="kv"><span>Our State</span><span>${esc(stateName)}${stateName ? " Code " + esc(g("SState")) : ""}</span></div>
+          <div class="kv"><span>Delivery</span><span>${esc(g("pDelivery"))}</span></div>
+          <div class="kv"><span>GST No</span><span>${esc(g("SGstin"))}</span></div>
+          <div class="kv"><span>PAN No</span><span>${esc(sellerPan)}</span></div>
+          <div class="kv"><span>HSN Code</span><span>${esc(hsnCode)}</span></div>
+        </div>
+      </div>
 
-    <table class="items">
-      <thead><tr>
-        <th class="c" style="width:8%;">SR. NO</th>
-        <th>DESCRIPTION</th>
-        <th class="num" style="width:14%;">WEIGHT IN CTS</th>
-        <th class="num" style="width:16%;">RATE PER CTS</th>
-        <th class="num" style="width:16%;">TOTAL AMOUNT</th>
-      </tr></thead>
-      <tbody>${rowsHtml}${blankRowsHtml}
-        <tr class="totrow"><td class="c"></td><td style="text-align:right;">TOTAL</td><td class="num">${numAlways(totalQty)}</td><td></td><td class="num">${numAlways(totalAmt)}</td></tr>
-      </tbody>
-    </table>
+      <table class="items">
+        <thead><tr>
+          <th class="c" style="width:8%;">Sr. No</th>
+          <th>Description</th>
+          <th class="num" style="width:14%;">Weight in Cts</th>
+          <th class="num" style="width:16%;">Rate per Cts</th>
+          <th class="num" style="width:16%;">Total Amount</th>
+        </tr></thead>
+        <tbody>${rowsHtml}
+          <tr class="totrow"><td class="c"></td><td style="text-align:right;">TOTAL</td><td class="num">${numAlways(totalQty)}</td><td></td><td class="num">${numAlways(totalAmt)}</td></tr>
+        </tbody>
+      </table>
 
-    <table class="words-tax">
-      <tr>
-        <td style="width:55%;">TOTAL AMOUNT: ${esc(amountWords.toUpperCase())}.</td>
-        <td style="width:45%;">
+      <div class="mid-grid">
+        <div>
+          <div class="lbl">Amount in Words</div>
+          ${esc(amountWords)}.
+        </div>
+        <div>
           <table class="tax-mini">
-            <tr><td>ADD CGST@${esc(String(halfRate))}%</td><td class="amt">${num(cgst)}</td></tr>
-            <tr><td>ADD SGST@${esc(String(halfRate))}%</td><td class="amt">${num(sgst)}</td></tr>
-            <tr><td>ADD IGST@${esc(String(gstRate))}%</td><td class="amt">${num(igst)}</td></tr>
+            <tr><td>Add CGST @ ${esc(String(halfRate))}%</td><td class="amt">${num(cgst)}</td></tr>
+            <tr><td>Add SGST @ ${esc(String(halfRate))}%</td><td class="amt">${num(sgst)}</td></tr>
+            <tr><td>Add IGST @ ${esc(String(gstRate))}%</td><td class="amt">${num(igst)}</td></tr>
           </table>
-        </td>
-      </tr>
-      <tr>
-        <td>
-          <div style="font-weight:700;margin-bottom:4px;">PAYMENT INSTRUCTIONS</div>
-          <div>A/C NAME: ${esc(company.bankAccName || "")}</div>
-          <div>A/C NO: ${esc(company.bankAccNo || "")}</div>
-          <div>IFSC NO: ${esc(company.bankIfsc || "")}</div>
-          <div>BANK ADDRESS: ${esc(company.bankAddress || "")}</div>
-        </td>
-        <td style="text-align:right;font-weight:700;">NET AMOUNT<br>${numAlways(totInv)}</td>
-      </tr>
-    </table>
+        </div>
+      </div>
 
-    <div class="declaration">
-      The seller hereby guarantees that no diamonds of Russian origin purchased after February 24, 2022 are present in the products
-      supplied herein, based on personal knowledge and/or written guarantees provided by the supplier of these diamonds. To the best
-      of our knowledge, we hereby declare that the diamonds herein invoiced have not been processed from rough diamonds originating
-      from the Russian Federation and invoiced to us after March 11th 2022, and the seller hereby guarantees that these diamonds are
-      conflict-free and confirms adherence to the WDC System of Warranties guidelines.<br><br>
-      <strong>DECLARATION:</strong> The diamonds herein invoiced have been purchased from legitimate sources not involved in funding
-      conflict and in compliance with United Nations Resolutions. The seller hereby guarantees that these diamonds are conflict free,
-      based on personal knowledge and/or written guarantees provided by our suppliers. We state that "diamonds herein invoiced have not
-      been obtained in violation of applicable national laws and/or sanctioned by the U.S. Department of Treasury's Office of Foreign
-      Assets Control (OFAC), and have not originated from the Marange Resources of Zimbabwe." "The diamonds herein invoiced are
-      exclusively of natural origin and untreated, based on personal knowledge and/or written guarantees provided by the supplier of
-      these diamonds. The acceptance of goods herein invoiced will be as per the WFDB guidelines." "I/We hereby certify that my/our
-      registration certificate under the Goods and Service Tax Act 2017 is in force on the date on which the sale of the goods
-      specified in this tax invoice is made by me/us, and the transaction of sale covered by this tax invoice has been effected by
-      me/us and shall be accounted for in the turnover of sales while filing returns, and due tax, if any, payable on the sale has
-      been paid or shall be paid." ${esc(company.jurisdictionNote || "")}
-    </div>
+      <div class="pay-decl-grid">
+        <div>
+          <div class="lbl">Payment Instructions</div>
+          <div>A/C Name: ${esc(company.bankAccName || "")}</div>
+          <div>A/C No: ${esc(company.bankAccNo || "")}</div>
+          <div>IFSC No: ${esc(company.bankIfsc || "")}</div>
+          <div>Bank Address: ${esc(company.bankAddress || "")}</div>
+        </div>
+        <div class="grand-total">
+          <div class="lbl">Net Amount</div>
+          <div class="amt">Rs. ${numAlways(totInv)}</div>
+        </div>
+      </div>
 
-    <table class="sig">
-      <tr>
-        <td style="width:55%;">SIGNATURE &amp; STAMP OF RECEIVER</td>
-        <td style="width:45%;text-align:right;">
-          For,<br><strong>${esc((company.tradeName || company.name || "").toUpperCase())}</strong><br><br><br>
+      <div class="declaration">
+        The seller hereby guarantees that no diamonds of Russian origin purchased after February 24, 2022 are present in the products
+        supplied herein, based on personal knowledge and/or written guarantees provided by the supplier of these diamonds. To the best
+        of our knowledge, we hereby declare that the diamonds herein invoiced have not been processed from rough diamonds originating
+        from the Russian Federation and invoiced to us after March 11th 2022, and the seller hereby guarantees that these diamonds are
+        conflict-free and confirms adherence to the WDC System of Warranties guidelines.<br><br>
+        <strong>Declaration:</strong> The diamonds herein invoiced have been purchased from legitimate sources not involved in funding
+        conflict and in compliance with United Nations Resolutions. The seller hereby guarantees that these diamonds are conflict free,
+        based on personal knowledge and/or written guarantees provided by our suppliers. We state that "diamonds herein invoiced have not
+        been obtained in violation of applicable national laws and/or sanctioned by the U.S. Department of Treasury's Office of Foreign
+        Assets Control (OFAC), and have not originated from the Marange Resources of Zimbabwe." "The diamonds herein invoiced are
+        exclusively of natural origin and untreated, based on personal knowledge and/or written guarantees provided by the supplier of
+        these diamonds. The acceptance of goods herein invoiced will be as per the WFDB guidelines." "I/We hereby certify that my/our
+        registration certificate under the Goods and Service Tax Act 2017 is in force on the date on which the sale of the goods
+        specified in this tax invoice is made by me/us, and the transaction of sale covered by this tax invoice has been effected by
+        me/us and shall be accounted for in the turnover of sales while filing returns, and due tax, if any, payable on the sale has
+        been paid or shall be paid." ${esc(company.jurisdictionNote || "")}
+      </div>
+
+      <div class="sig-row">
+        <div>Signature &amp; Stamp of Receiver</div>
+        <div class="sig-block">
+          For,<br><strong>${esc((company.tradeName || company.name || "").toUpperCase())}</strong>
+          <div class="sig-line"></div>
           ${esc(company.signatoryTitle || "Authorized Signatory")}
-        </td>
-      </tr>
-    </table>
-
+        </div>
+      </div>
+    </div>
   </body></html>`;
 }
 
@@ -1595,133 +1992,149 @@ function renderDivineInvoiceHtml(d) {
 
   const rowsHtml = rows.map((r) => `<tr>
       <td class="c">${esc(r.sl)}</td>
-      <td>${esc(r.desc)}${r.hsn ? `<br><span class="hsn">HSN CODE: ${esc(r.hsn)}</span>` : ""}</td>
+      <td>${esc(r.desc)}${r.hsn ? `<br><span class="hsn">HSN Code: ${esc(r.hsn)}</span>` : ""}</td>
       <td class="num"></td>
       <td class="num">${esc(r.qty)}</td>
       <td class="num">${numAlways(r.price)}</td>
       <td class="num">${numAlways(r.total)}</td>
     </tr>`).join("");
-  const blankRowsHtml = "";
 
   return `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Invoice ${esc(g("DocNo"))}</title>
   <style>
     @page { margin: 10mm 12mm; size: A4; }
     *{box-sizing:border-box;}
     html,body{height:auto;}
-    body{font-family:Arial,Helvetica,sans-serif;color:#111;font-size:10.5px;margin:0;line-height:1.3;}
+    body{font-family:Arial,Helvetica,sans-serif;color:#1a1a1a;font-size:10.5px;margin:0;line-height:1.42;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
     .letterhead-space{height:100px;}
-    table.frame{width:100%;border-collapse:collapse;border:1.5px solid #000;page-break-inside:avoid;}
-    table.frame > tbody > tr > td{border:1px solid #000;vertical-align:top;padding:4px 7px;}
-    .hdr{text-align:center;font-weight:700;font-size:13px;letter-spacing:.03em;}
-    .meta-table{width:100%;border-collapse:collapse;font-size:10.5px;}
-    .meta-table td{border:none;padding:0;}
-    .meta-table td.k{width:38%;font-weight:600;}
-    .pay-hdr{text-decoration:underline;font-weight:700;margin-top:6px;}
-    table.items{width:100%;border-collapse:collapse;font-size:10.5px;margin-top:6px;page-break-inside:avoid;}
-    table.items th,table.items td{border:1px solid #000;padding:3px 6px;text-align:left;}
-    table.items th{background:#f0f0f0;font-weight:700;}
+    .inv-wrap{border:1px solid #c7cbd6;}
+    .inv-title{text-align:center;font-family:Georgia,'Times New Roman',serif;font-weight:700;font-size:17px;letter-spacing:.12em;color:#2b3a67;padding:9px 0 8px;border-bottom:2px solid #2b3a67;}
+    .inv-topgrid{display:flex;page-break-inside:avoid;}
+    .inv-topgrid > div{flex:1;padding:9px 14px;}
+    .inv-topgrid > div:first-child{border-right:1px solid #d7dae2;}
+    .lbl{font-size:8.5px;font-weight:700;letter-spacing:.08em;color:#6b7280;text-transform:uppercase;margin-bottom:4px;}
+    .buyer-name{font-size:12px;font-weight:700;color:#1a1a1a;margin-bottom:2px;}
+    .addr{color:#333;margin-bottom:5px;}
+    .kv{display:flex;justify-content:space-between;gap:8px;padding:1.5px 0;border-bottom:1px dotted #e2e4ea;}
+    .kv span:first-child{color:#6b7280;}
+    .kv span:last-child{font-weight:600;text-align:right;}
+    .kv.strong span:last-child{font-weight:700;}
+    table.items{width:100%;border-collapse:collapse;font-size:10px;border-top:1px solid #c7cbd6;page-break-inside:avoid;}
+    table.items th{background:#f3f4f8;color:#2b3a67;font-weight:700;font-size:9px;letter-spacing:.04em;text-transform:uppercase;padding:6px 8px;border-bottom:1.5px solid #2b3a67;text-align:left;}
+    table.items td{padding:5px 8px;border-bottom:1px solid #e2e4ea;}
     table.items td.c{text-align:center;}
     table.items td.num, table.items th.num{text-align:right;}
-    table.items .hsn{font-size:9px;color:#333;}
-    table.words-tax{width:100%;border-collapse:collapse;font-size:10.5px;margin-top:6px;page-break-inside:avoid;}
-    table.words-tax td{border:1px solid #000;padding:5px 7px;vertical-align:top;}
+    table.items .hsn{font-size:9px;color:#6b7280;}
+    .mid-grid{display:flex;border-top:1px solid #c7cbd6;page-break-inside:avoid;}
+    .mid-grid > div{flex:1;padding:9px 14px;}
+    .mid-grid > div:first-child{border-right:1px solid #d7dae2;}
     table.tax-mini{width:100%;border-collapse:collapse;}
-    table.tax-mini td{border:none;padding:1px 0;}
-    table.tax-mini td.amt{text-align:right;}
-    table.tax-mini tr.total td{font-weight:700;border-top:1px solid #000;}
-    .declaration{font-size:8.5px;color:#222;line-height:1.35;padding:6px 7px;border:1px solid #000;border-top:none;page-break-inside:avoid;}
-    table.sig{width:100%;border-collapse:collapse;font-size:10.5px;page-break-inside:avoid;}
-    table.sig td{border:1px solid #000;border-top:none;padding:14px 7px 6px;vertical-align:bottom;}
-    @media print{ .letterhead-space{height:100px;} }
+    table.tax-mini td{padding:1.5px 0;border:none;}
+    table.tax-mini td.amt{text-align:right;font-weight:600;}
+    table.tax-mini tr.total td{font-weight:700;border-top:1px solid #c7cbd6;padding-top:3px;color:#2b3a67;}
+    .pay-decl-grid{display:flex;border-top:1px solid #c7cbd6;page-break-inside:avoid;}
+    .pay-decl-grid > div{flex:1;padding:9px 14px;}
+    .pay-decl-grid > div:first-child{border-right:1px solid #d7dae2;}
+    .grand-total{text-align:right;}
+    .grand-total .amt{font-size:15px;font-weight:700;color:#2b3a67;margin-top:4px;}
+    .declaration{font-size:8px;color:#555;line-height:1.5;padding:8px 14px;border-top:1px solid #c7cbd6;page-break-inside:avoid;background:#fafbfc;}
+    .sig-row{display:flex;border-top:1px solid #c7cbd6;page-break-inside:avoid;}
+    .sig-row > div{flex:1;padding:20px 14px 10px;}
+    .sig-row > div:first-child{border-right:1px solid #d7dae2;color:#555;}
+    .sig-block{text-align:right;}
+    .sig-line{border-top:1px solid #999;margin:18px 0 4px 35%;}
   </style></head><body>
     <div class="letterhead-space"></div>
-    <table class="frame">
-      <tr><td colspan="2" class="hdr">TAX INVOICE</td></tr>
-      <tr>
-        <td style="width:55%;">
-          <div style="font-weight:600;">To,</div>
-          <div style="font-weight:700;">${esc(g("BLglNm") || g("BTrdNm"))}</div>
-          ${g("BTrdNm") && g("BTrdNm") !== g("BLglNm") ? `<div>${esc(g("BTrdNm"))}</div>` : ""}
-          <div>${esc(g("BAddr1"))}${g("BAddr2") ? ", " + esc(g("BAddr2")) : ""}</div>
-          <div>${esc(g("BLoc"))}${g("BPin") ? " - " + esc(g("BPin")) : ""}</div>
-          <br>
-          <table class="meta-table">
-            <tr><td class="k">PAN NO:-</td><td>${esc(buyerPan)}</td></tr>
-            <tr><td class="k">GST NO:-</td><td>${esc(g("BGstin"))}</td></tr>
-            <tr><td class="k">TELE:-</td><td>${esc(g("BPh"))}</td></tr>
-          </table>
-        </td>
-        <td style="width:45%;">
-          <table class="meta-table">
-            <tr><td class="k">INVOICE NO :</td><td>${esc(g("DocNo"))}</td></tr>
-            <tr><td class="k">DATE:</td><td>${esc(g("DocDt"))}</td></tr>
-            <tr><td class="k">TERMS:</td><td>${esc(g("pTerms"))}</td></tr>
-            <tr><td colspan="2" style="font-weight:700;padding-top:4px;">${esc(g("pDelivery"))}</td></tr>
-            <tr><td class="k">PAN NO :</td><td>${esc(sellerPan)}</td></tr>
-            <tr><td class="k">GST NO:</td><td>${esc(g("SGstin"))}</td></tr>
-            <tr><td class="k">STATE CODE :</td><td>${esc(g("SState"))}</td></tr>
-          </table>
-          <div class="pay-hdr">PAYMENT INSTRUCTIONS :</div>
-          <div>${esc(company.bankName || "")}</div>
-          <div>${esc(company.bankAddress || "")}</div>
-          <div>A/C NO : ${esc(company.bankAccNo || "")}</div>
-          <div>IFSC NO : ${esc(company.bankIfsc || "")}</div>
-        </td>
-      </tr>
-    </table>
+    <div class="inv-wrap">
+      <div class="inv-title">Tax Invoice</div>
+      <div class="inv-topgrid">
+        <div>
+          <div class="lbl">Bill To</div>
+          <div class="buyer-name">${esc(g("BLglNm") || g("BTrdNm"))}</div>
+          ${g("BTrdNm") && g("BTrdNm") !== g("BLglNm") ? `<div class="addr">${esc(g("BTrdNm"))}</div>` : ""}
+          <div class="addr">${esc(g("BAddr1"))}${g("BAddr2") ? ", " + esc(g("BAddr2")) : ""}</div>
+          <div class="addr">${esc(g("BLoc"))}${g("BPin") ? " - " + esc(g("BPin")) : ""}</div>
+          <div class="kv"><span>PAN No</span><span>${esc(buyerPan)}</span></div>
+          <div class="kv"><span>GST No</span><span>${esc(g("BGstin"))}</span></div>
+          <div class="kv"><span>Tele</span><span>${esc(g("BPh"))}</span></div>
+        </div>
+        <div>
+          <div class="lbl">Invoice Details</div>
+          <div class="kv"><span>Invoice No</span><span>${esc(g("DocNo"))}</span></div>
+          <div class="kv"><span>Date</span><span>${esc(g("DocDt"))}</span></div>
+          <div class="kv"><span>Terms</span><span>${esc(g("pTerms"))}</span></div>
+          <div class="kv strong"><span>Delivery</span><span>${esc(g("pDelivery"))}</span></div>
+          <div class="kv"><span>PAN No</span><span>${esc(sellerPan)}</span></div>
+          <div class="kv"><span>GST No</span><span>${esc(g("SGstin"))}</span></div>
+          <div class="kv"><span>State Code</span><span>${esc(g("SState"))}</span></div>
+        </div>
+      </div>
 
-    <table class="items">
-      <thead><tr>
-        <th class="c" style="width:7%;">SR.NO</th>
-        <th>DESCRIPTION</th>
-        <th class="num" style="width:11%;">AVG PCS PER CTS</th>
-        <th class="num" style="width:12%;">WEIGHT IN CTS</th>
-        <th class="num" style="width:14%;">RATE PER CTS</th>
-        <th class="num" style="width:16%;">TOTAL AMOUNT (RS)</th>
-      </tr></thead>
-      <tbody>${rowsHtml}${blankRowsHtml}</tbody>
-    </table>
+      <table class="items">
+        <thead><tr>
+          <th class="c" style="width:7%;">Sr. No</th>
+          <th>Description</th>
+          <th class="num" style="width:11%;">Avg Pcs per Cts</th>
+          <th class="num" style="width:12%;">Weight in Cts</th>
+          <th class="num" style="width:14%;">Rate per Cts</th>
+          <th class="num" style="width:16%;">Total Amount (Rs)</th>
+        </tr></thead>
+        <tbody>${rowsHtml}</tbody>
+      </table>
 
-    <table class="words-tax">
-      <tr>
-        <td style="width:60%;">AMOUNT:- ${esc(amountWords.toUpperCase())}.</td>
-        <td style="width:40%;">
+      <div class="mid-grid">
+        <div>
+          <div class="lbl">Amount</div>
+          ${esc(amountWords)}.
+        </div>
+        <div>
           <table class="tax-mini">
-            <tr><td>SUBTOTAL</td><td class="amt">${numAlways(subtotal)}</td></tr>
+            <tr><td>Subtotal</td><td class="amt">${numAlways(subtotal)}</td></tr>
             <tr><td>CGST @ ${esc(String(halfRate))}%</td><td class="amt">${numAlways(cgst)}</td></tr>
             <tr><td>SGST @ ${esc(String(halfRate))}%</td><td class="amt">${numAlways(sgst)}</td></tr>
             <tr><td>IGST @ ${esc(String(gstRate))}%</td><td class="amt">${numAlways(igst)}</td></tr>
-            <tr class="total"><td>TOTAL</td><td class="amt">${numAlways(totInv)}</td></tr>
+            <tr class="total"><td>Total</td><td class="amt">${numAlways(totInv)}</td></tr>
           </table>
-        </td>
-      </tr>
-    </table>
+        </div>
+      </div>
 
-    <div class="declaration">
-      The diamonds herein invoiced have been purchased from legitimate sources not involved in funding conflict and in compliance
-      with United Nations Resolutions. The seller hereby guarantees that these diamonds are conflict free based on personal
-      knowledge and/or written guarantees provided by the supplier of these diamonds. To the best of our knowledge and/or written
-      assurances from our suppliers we state that "diamonds herein invoiced have not been obtained in violation of applicable
-      national laws and/or sanctioned by the U.S. Department of Treasury's Office of Foreign Assets Control (OFAC) and have not
-      originated from the Marange Resources of Zimbabwe." "The diamonds herein invoiced are exclusively of natural origin and
-      untreated based on personal knowledge and/or written guarantees provided by the supplier of these diamonds. The acceptance of
-      goods herein invoiced will be as per the WFDB Guidelines." "I/We hereby certify that my/our registration certificate under the
-      Goods and Service Tax Act 2017 is in force on the date on which the sale of the goods specified in this tax invoice is made by
-      me/us and the transaction of sale covered by this tax invoice has been effected by me/us and it shall be accounted for in the
-      turnover of the sales while filing of return and due tax, if any, payable on the sale has been paid or shall be paid."<br><br>
-      ${esc(company.jurisdictionNote || "")}
-    </div>
+      <div class="pay-decl-grid">
+        <div>
+          <div class="lbl">Payment Instructions</div>
+          <div>${esc(company.bankName || "")}</div>
+          <div>${esc(company.bankAddress || "")}</div>
+          <div>A/C No: ${esc(company.bankAccNo || "")}</div>
+          <div>IFSC No: ${esc(company.bankIfsc || "")}</div>
+        </div>
+        <div class="grand-total">
+          <div class="lbl">Total Payable</div>
+          <div class="amt">Rs. ${numAlways(totInv)}</div>
+        </div>
+      </div>
 
-    <table class="sig">
-      <tr>
-        <td style="width:55%;">Receiver's Signature &amp; Stamp</td>
-        <td style="width:45%;text-align:right;">
-          For,<br><strong>${esc((company.tradeName || company.name || "").toUpperCase())}</strong><br><br><br>
+      <div class="declaration">
+        The diamonds herein invoiced have been purchased from legitimate sources not involved in funding conflict and in compliance
+        with United Nations Resolutions. The seller hereby guarantees that these diamonds are conflict free based on personal
+        knowledge and/or written guarantees provided by the supplier of these diamonds. To the best of our knowledge and/or written
+        assurances from our suppliers we state that "diamonds herein invoiced have not been obtained in violation of applicable
+        national laws and/or sanctioned by the U.S. Department of Treasury's Office of Foreign Assets Control (OFAC) and have not
+        originated from the Marange Resources of Zimbabwe." "The diamonds herein invoiced are exclusively of natural origin and
+        untreated based on personal knowledge and/or written guarantees provided by the supplier of these diamonds. The acceptance of
+        goods herein invoiced will be as per the WFDB Guidelines." "I/We hereby certify that my/our registration certificate under the
+        Goods and Service Tax Act 2017 is in force on the date on which the sale of the goods specified in this tax invoice is made by
+        me/us and the transaction of sale covered by this tax invoice has been effected by me/us and it shall be accounted for in the
+        turnover of the sales while filing of return and due tax, if any, payable on the sale has been paid or shall be paid."<br><br>
+        ${esc(company.jurisdictionNote || "")}
+      </div>
+
+      <div class="sig-row">
+        <div>Receiver's Signature &amp; Stamp</div>
+        <div class="sig-block">
+          For,<br><strong>${esc((company.tradeName || company.name || "").toUpperCase())}</strong>
+          <div class="sig-line"></div>
           ${esc(company.signatoryTitle || "Proprietor")}
-        </td>
-      </tr>
-    </table>
-
+        </div>
+      </div>
+    </div>
   </body></html>`;
 }
 
@@ -1760,23 +2173,99 @@ function loadSampleInvoice() {
     $("SState").value = "29";
   }
 
-  $("BGstin").value = "27AAACB2230A1Z9";
-  $("BLglNm").value = "Sample Buyer Enterprises";
-  $("BAddr1").value = "45 Linking Road";
-  $("BLoc").value = "Mumbai";
-  $("BPin").value = "400050";
-  $("BState").value = "27";
-  $("BPos").value = "27";
+  // The sample invoice uses your two real companies as *each other's* buyer
+  // — whichever one is selected at the top as seller, the other one gets
+  // filled in as the buyer — with a realistic description/HSN/rate pulled
+  // from your own invoices, but rounded to easy multiples (10, 100, 1000)
+  // so the numbers are simple to follow at a glance.
+  const companies = loadCompanies();
+  const selectedId = $("companyToggle") ? $("companyToggle").dataset.selected : "";
+  const company = companies.find((c) => c.id === selectedId) || {};
+  const isDivine = company.invoiceTemplate === "divine";
+  const otherCompany = companies.find((c) => c.id === (isDivine ? "vama_exports" : "divine_jewels"));
+
+  if (otherCompany) {
+    $("buyerSearch").value = otherCompany.name;
+    $("BGstin").value = otherCompany.gstin || "";
+    $("BLglNm").value = otherCompany.legalName || "";
+    $("BTrdNm").value = otherCompany.tradeName || "";
+    $("BAddr1").value = otherCompany.addr1 || "";
+    $("BAddr2").value = otherCompany.addr2 || "";
+    $("BLoc").value = otherCompany.loc || "";
+    $("BPin").value = otherCompany.pin || "";
+    $("BState").value = otherCompany.state || "";
+    $("BPos").value = otherCompany.state || "";
+    $("BPh").value = otherCompany.phone || "";
+    $("BEm").value = otherCompany.email || "";
+  }
 
   $("itemsBody").innerHTML = "";
   itemCounter = 0;
-  addItemRow({ "f-desc": "Widget Type A", "f-hsn": "8479", "f-qty": 10, "f-price": 500, "f-gstrate": 18, "f-unit": "NOS" });
+  if (isDivine) {
+    addItemRow({ "f-desc": "Rough Diamonds", "f-hsn": "71023100", "f-qty": 100, "f-price": 25000, "f-gstrate": 0.25 });
+  } else {
+    addItemRow({ "f-desc": "Cut & Polished Diamonds", "f-hsn": "71023910", "f-qty": 10, "f-price": 50000, "f-gstrate": 1.5 });
+  }
 
+  document.querySelectorAll("#itemsBody tr").forEach(recalcItemRow);
   recalcAllTotals();
+}
+
+// ---------- header clock ----------
+function wireHeaderClock() {
+  const el = $("headerClock");
+  if (!el) return;
+  function render() {
+    const now = new Date();
+    const time = now.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false });
+    const date = now.toLocaleDateString("en-IN", { weekday: "long", day: "2-digit", month: "short", year: "numeric" });
+    el.innerHTML = `<div class="hc-time">${time}</div><div class="hc-date">${date}</div>`;
+  }
+  render();
+  setInterval(render, 1000);
+}
+
+// ---------- password gate ----------
+// A simple client-side lock screen — not real security (this is a static
+// page, so the password and everything behind it is visible to anyone who
+// views the page source), just a basic deterrent against casual snooping.
+// Unlocking is remembered for the rest of the browser session.
+const APP_PASSWORD = "VAMA";
+const PW_UNLOCK_KEY = "einv_unlocked_v1";
+function wirePasswordGate() {
+  const gate = $("pwGate");
+  if (!gate) return;
+  let unlocked = false;
+  try { unlocked = sessionStorage.getItem(PW_UNLOCK_KEY) === "1"; } catch (e) { unlocked = false; }
+  if (unlocked) { gate.classList.add("hidden"); return; }
+
+  const input = $("pwInput");
+  const err = $("pwErr");
+  const card = $("pwCard");
+  function tryUnlock() {
+    if ((input.value || "").trim().toUpperCase() === APP_PASSWORD) {
+      try { sessionStorage.setItem(PW_UNLOCK_KEY, "1"); } catch (e) { /* ignore */ }
+      gate.classList.add("hidden");
+    } else {
+      err.style.display = "block";
+      input.value = "";
+      input.focus();
+      if (card) {
+        card.classList.remove("shake");
+        void card.offsetWidth; // restart the animation even if triggered again immediately
+        card.classList.add("shake");
+      }
+    }
+  }
+  $("pwSubmit").addEventListener("click", tryUnlock);
+  input.addEventListener("keydown", (e) => { if (e.key === "Enter") tryUnlock(); });
+  setTimeout(() => input.focus(), 50);
 }
 
 // ---------- wiring ----------
 document.addEventListener("DOMContentLoaded", () => {
+  wirePasswordGate();
+  wireHeaderClock();
   initStaticDropdowns();
   wireCardCollapse();
   wireSettings();
@@ -1825,8 +2314,8 @@ document.addEventListener("DOMContentLoaded", () => {
     $("statusMsg").textContent = "Ready for a new invoice.";
   });
 
-  // buyer address book — search-as-you-type instead of a plain dropdown
-  attachSuggestions($("buyerSearch"), buyerSuggestionItems, (it) => { selectBuyerById(it.id); saveDraft(); });
+  // buyer address book — search-as-you-type with inline ghost autocomplete
+  attachAutocomplete($("buyerSearch"), buyerSuggestionItems, (it) => { selectBuyerById(it.id); saveDraft(); });
   $("btnClearBuyer").addEventListener("click", () => {
     $("buyerSearch").value = "";
     selectBuyerById("");
