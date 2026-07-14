@@ -28,16 +28,16 @@
   .company-toggle{display:flex;gap:10px;flex-wrap:wrap;}
   .profile-icon{width:40px;height:40px;flex:none;border-radius:50%;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.35);color:#fff;font-size:18px;padding:0;display:flex;align-items:center;justify-content:center;cursor:pointer;}
   .profile-icon:hover{background:rgba(255,255,255,.24);}
-  .company-toggle-btn{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.3);color:#fff;padding:11px 24px;font-size:14.5px;font-weight:700;border-radius:999px;cursor:pointer;transition:background .15s,border-color .15s,transform .05s;}
-  .company-toggle-btn:hover{background:rgba(255,255,255,.16);}
-  .company-toggle-btn:active{transform:scale(.98);}
-  .company-toggle-btn.active{background:#fff;color:var(--primary-dark);border-color:#fff;}
+  .company-toggle-btn{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.3);color:#fff;padding:11px 24px;font-size:14.5px;font-weight:700;border-radius:999px;cursor:pointer;transition:background .15s,border-color .15s,transform .12s;}
+  .company-toggle-btn:hover{background:rgba(255,255,255,.16);transform:translateY(-1px);}
+  .company-toggle-btn:active{transform:scale(.96);}
+  .company-toggle-btn.active{background:#fff;color:var(--primary-dark);border-color:#fff;animation:fadeIn .2s ease;}
 
   select, input, textarea{font-family:inherit;font-size:13px;padding:8px 10px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--surface-2);color:var(--text);transition:border-color .12s,box-shadow .12s;}
   select:focus, input:focus, textarea:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(99,102,241,.25);}
-  button{font-family:inherit;font-size:13px;padding:8px 15px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--surface-2);color:var(--text);cursor:pointer;font-weight:500;display:inline-flex;align-items:center;gap:6px;transition:background .12s,box-shadow .12s,transform .05s;}
-  button:hover{background:#262b36;}
-  button:active{transform:scale(.98);}
+  button{font-family:inherit;font-size:13px;padding:8px 15px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--surface-2);color:var(--text);cursor:pointer;font-weight:500;display:inline-flex;align-items:center;gap:6px;transition:background .12s,box-shadow .12s,transform .1s;}
+  button:hover{background:#262b36;transform:translateY(-1px);box-shadow:0 3px 10px rgba(0,0,0,.3);}
+  button:active{transform:translateY(0) scale(.96);box-shadow:none;}
   button.primary{background:var(--primary);border-color:var(--primary);color:#fff;font-weight:600;}
   button.primary:hover{background:var(--primary-dark);}
   button.success{background:var(--success);border-color:var(--success);color:#052e21;font-weight:600;}
@@ -45,16 +45,29 @@
   button.danger{background:var(--surface-2);border-color:var(--danger);color:var(--danger);}
   button.danger:hover{background:rgba(248,113,113,.14);}
   button.small{padding:5px 10px;font-size:12px;}
+  button.icon-btn{padding:8px;width:36px;height:36px;justify-content:center;}
+  button.icon-btn svg{display:block;}
 
-  .app-shell{max-width:900px;margin:0 auto;padding:22px 20px 90px;}
+  .app-shell{max-width:1300px;margin:0 auto;padding:22px 20px 90px;}
   .content{width:100%;min-width:0;}
 
-  .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:16px;overflow:hidden;box-shadow:var(--shadow);scroll-margin-top:80px;}
-  .card-head{padding:13px 18px;background:var(--surface-2);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none;}
+  @keyframes fadeInUp{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:none;}}
+  @keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:16px;overflow:hidden;box-shadow:var(--shadow);scroll-margin-top:80px;animation:fadeInUp .4s ease-out both;transition:box-shadow .15s;}
+  .card:hover{box-shadow:0 4px 18px rgba(0,0,0,.4);}
+  .app-shell > .card:nth-of-type(1){animation-delay:0s;}
+  .app-shell > .card:nth-of-type(2){animation-delay:.04s;}
+  .app-shell > .card:nth-of-type(3){animation-delay:.08s;}
+  .app-shell > .card:nth-of-type(4){animation-delay:.12s;}
+  .app-shell > .card:nth-of-type(5){animation-delay:.16s;}
+  .app-shell > .card:nth-of-type(6){animation-delay:.2s;}
+  .app-shell > .card:nth-of-type(n+7){animation-delay:.22s;}
+  .card-head{padding:13px 18px;background:var(--surface-2);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none;transition:background .12s;}
+  .card-head:hover{background:#262b36;}
   .card-head h2{font-size:14px;margin:0;font-weight:700;color:var(--text);display:flex;align-items:center;gap:10px;}
-  .card-head .chevron{color:var(--muted);font-size:11px;transition:transform .15s;}
+  .card-head .chevron{color:var(--muted);font-size:11px;transition:transform .2s;display:inline-block;}
   .card.collapsed .chevron{transform:rotate(-90deg);}
-  .card-body{padding:18px;}
+  .card-body{padding:18px;animation:fadeIn .25s ease;}
   .card.collapsed .card-body{display:none;}
   .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;}
   details.more-options{margin-top:14px;}
@@ -84,12 +97,21 @@
 
   /* items table */
   .table-scroll{overflow-x:auto;border:1px solid var(--border);border-radius:var(--radius-sm);}
-  table.items{width:100%;border-collapse:collapse;font-size:12px;min-width:1900px;}
-  table.items th{background:var(--primary-light);padding:8px 7px;text-align:left;font-weight:700;color:var(--primary-dark);white-space:nowrap;border-bottom:2px solid rgba(99,102,241,.35);position:sticky;top:0;font-size:11px;text-transform:uppercase;letter-spacing:.02em;z-index:1;}
-  table.items td{padding:3px;border-bottom:1px solid var(--border);vertical-align:top;}
+  table.items{width:100%;border-collapse:collapse;font-size:12px;}
+  /* No hardcoded min-width: with the default toggles (service/barcode/free
+     qty/batch/cess columns hidden), the table now sizes itself to just the
+     required-first columns so it fits on screen without side-scrolling.
+     .table-scroll's overflow-x still kicks in automatically if the user
+     switches on enough optional columns to overflow the viewport. */
+  table.items input, table.items select{box-sizing:border-box;}
+  table.items th{background:var(--primary-light);padding:7px 5px;text-align:left;font-weight:700;color:var(--primary-dark);white-space:nowrap;border-bottom:2px solid rgba(99,102,241,.35);position:sticky;top:0;font-size:10.5px;text-transform:uppercase;letter-spacing:.02em;z-index:1;}
+  table.items td{padding:2px;border-bottom:1px solid var(--border);vertical-align:top;}
   table.items tbody tr:nth-child(even){background:rgba(255,255,255,.02);}
   table.items tbody tr:hover{background:rgba(99,102,241,.1);}
-  table.items input, table.items select{width:100%;min-width:70px;padding:5px 6px;font-size:12px;border-color:transparent;background:transparent;color:var(--text);border-radius:6px;}
+  table.items tbody tr{animation:fadeIn .2s ease;transition:background .12s;}
+  .item-remove{transition:transform .1s,background .12s;}
+  .item-remove:hover{transform:scale(1.12);}
+  table.items input, table.items select{width:100%;min-width:46px;padding:4px 5px;font-size:11.5px;border-color:transparent;background:transparent;color:var(--text);border-radius:6px;}
   table.items input:hover, table.items select:hover{border-color:var(--border);background:var(--surface-2);}
   table.items input:focus, table.items select:focus{border-color:var(--primary);background:var(--surface-2);}
   table.items.hide-isserv .col-isserv{display:none;}
@@ -100,7 +122,8 @@
 
   /* click-to-fill suggestion dropdown, used for HSN + Description fields
      instead of native <datalist> (unreliable across browsers) */
-  .suggest-box{position:absolute;z-index:200;background:var(--surface-2);border:1px solid var(--border);border-radius:8px;box-shadow:var(--shadow-md);max-height:280px;overflow-y:auto;overscroll-behavior:contain;font-size:12.5px;}
+  .suggest-box{position:absolute;z-index:200;background:var(--surface-2);border:1px solid var(--border);border-radius:8px;box-shadow:var(--shadow-md);max-height:280px;overflow-y:auto;overscroll-behavior:contain;font-size:12.5px;animation:fadeIn .12s ease;}
+  .suggest-item{transition:background .08s;}
   .suggest-box.hidden{display:none;}
   .suggest-item{padding:7px 10px;cursor:pointer;color:var(--text);white-space:nowrap;}
   .suggest-item:hover{background:var(--primary-light);}
@@ -124,9 +147,9 @@
   .totals .box input{width:100px;margin-top:5px;}
 
   .actions-bar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;padding:16px 18px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);position:sticky;bottom:12px;box-shadow:var(--shadow-md);}
-  #errorBox{background:rgba(248,113,113,.12);border:1px solid rgba(248,113,113,.4);color:var(--danger);padding:12px 16px;border-radius:var(--radius-sm);margin:0 0 14px;font-size:13px;display:none;}
+  #errorBox{background:rgba(248,113,113,.12);border:1px solid rgba(248,113,113,.4);color:var(--danger);padding:12px 16px;border-radius:var(--radius-sm);margin:0 0 14px;font-size:13px;display:none;animation:fadeInUp .25s ease;}
   #errorBox ul{margin:6px 0 0 18px;padding:0;}
-  #successBox{background:rgba(52,211,153,.12);border:1px solid rgba(52,211,153,.4);color:var(--success);padding:11px 16px;border-radius:var(--radius-sm);margin:0 0 14px;font-size:13px;display:none;font-weight:600;}
+  #successBox{background:rgba(52,211,153,.12);border:1px solid rgba(52,211,153,.4);color:var(--success);padding:11px 16px;border-radius:var(--radius-sm);margin:0 0 14px;font-size:13px;display:none;font-weight:600;animation:fadeInUp .25s ease;}
 
 
   .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.65);display:flex;align-items:center;justify-content:center;z-index:100;}
@@ -176,7 +199,7 @@
 <div class="pw-gate" id="pwGate">
   <div class="pw-card" id="pwCard">
     <div class="pw-badge">🔒</div>
-    <div class="pw-title">eINV</div>
+    <div class="pw-title">VDInv</div>
     <div class="pw-sub">Enter password to continue</div>
     <input type="password" id="pwInput" placeholder="Password" autocomplete="off">
     <button class="primary" id="pwSubmit">Unlock</button>
@@ -259,27 +282,23 @@
       </div>
       <div class="hint" style="margin-top:8px;">Terms, Due Date, and Delivery are printed on the invoice only — not part of the e-invoice JSON.</div>
     </details>
-  </div>
-</div>
-
-<!-- INVOICE SETTINGS -->
-<div class="card collapsed" id="cardSettings">
-  <div class="card-head" data-toggle="cardSettings"><h2>What do you need on this invoice?</h2><span class="chevron">▾</span></div>
-  <div class="card-body">
-    <p class="muted-note">Everything defaults to "No" — matching a plain Regular / B2B invoice. Switch anything on only if you actually use it, and the matching fields/columns appear.</p>
-    <div class="toggle-list">
-      <div class="toggle-row"><span class="q">Reverse Charge applicable?</span><label class="switch"><input type="checkbox" id="setRevCharge"><span class="track"></span></label></div>
-      <div class="toggle-row"><span class="q">Sold via e-Commerce (GSTIN)?</span><label class="switch"><input type="checkbox" id="setEcomGstin"><span class="track"></span></label></div>
-      <div class="toggle-row"><span class="q">Dispatch from a different address?</span><label class="switch"><input type="checkbox" id="setDispatch"><span class="track"></span></label></div>
-      <div class="toggle-row"><span class="q">Ship to a different party/address?</span><label class="switch"><input type="checkbox" id="setShipping"><span class="track"></span></label></div>
-      <div class="toggle-row"><span class="q">Supply of service (Is_Service)?</span><label class="switch"><input type="checkbox" id="setIsService"><span class="track"></span></label></div>
-      <div class="toggle-row"><span class="q">Barcode on items?</span><label class="switch"><input type="checkbox" id="setBarcode"><span class="track"></span></label></div>
-      <div class="toggle-row"><span class="q">Free quantity on items?</span><label class="switch"><input type="checkbox" id="setFreeQty"><span class="track"></span></label></div>
-      <div class="toggle-row"><span class="q">Batch details on items?</span><label class="switch"><input type="checkbox" id="setBatch"><span class="track"></span></label></div>
-      <div class="toggle-row"><span class="q">Export details?</span><label class="switch"><input type="checkbox" id="setExport"><span class="track"></span></label></div>
-      <div class="toggle-row"><span class="q">E-way bill details?</span><label class="switch"><input type="checkbox" id="setEwb"><span class="track"></span></label></div>
-      <div class="toggle-row"><span class="q">Cess / State Cess / other charges applicable?</span><label class="switch"><input type="checkbox" id="setCess"><span class="track"></span></label></div>
-    </div>
+    <details class="more-options" id="cardSettings">
+      <summary>What do you need on this invoice? (Reverse Charge, e-Commerce, Dispatch, Shipping, Service, Barcode, Free Qty, Batch, Export, e-Way Bill, Cess)</summary>
+      <p class="muted-note" style="margin-top:12px;">Everything defaults to "No" — matching a plain Regular / B2B invoice. Switch anything on only if you actually use it, and the matching fields/columns appear.</p>
+      <div class="toggle-list">
+        <div class="toggle-row"><span class="q">Reverse Charge applicable?</span><label class="switch"><input type="checkbox" id="setRevCharge"><span class="track"></span></label></div>
+        <div class="toggle-row"><span class="q">Sold via e-Commerce (GSTIN)?</span><label class="switch"><input type="checkbox" id="setEcomGstin"><span class="track"></span></label></div>
+        <div class="toggle-row"><span class="q">Dispatch from a different address?</span><label class="switch"><input type="checkbox" id="setDispatch"><span class="track"></span></label></div>
+        <div class="toggle-row"><span class="q">Ship to a different party/address?</span><label class="switch"><input type="checkbox" id="setShipping"><span class="track"></span></label></div>
+        <div class="toggle-row"><span class="q">Supply of service (Is_Service)?</span><label class="switch"><input type="checkbox" id="setIsService"><span class="track"></span></label></div>
+        <div class="toggle-row"><span class="q">Barcode on items?</span><label class="switch"><input type="checkbox" id="setBarcode"><span class="track"></span></label></div>
+        <div class="toggle-row"><span class="q">Free quantity on items?</span><label class="switch"><input type="checkbox" id="setFreeQty"><span class="track"></span></label></div>
+        <div class="toggle-row"><span class="q">Batch details on items?</span><label class="switch"><input type="checkbox" id="setBatch"><span class="track"></span></label></div>
+        <div class="toggle-row"><span class="q">Export details?</span><label class="switch"><input type="checkbox" id="setExport"><span class="track"></span></label></div>
+        <div class="toggle-row"><span class="q">E-way bill details?</span><label class="switch"><input type="checkbox" id="setEwb"><span class="track"></span></label></div>
+        <div class="toggle-row"><span class="q">Cess / State Cess / other charges applicable?</span><label class="switch"><input type="checkbox" id="setCess"><span class="track"></span></label></div>
+      </div>
+    </details>
   </div>
 </div>
 
@@ -397,9 +416,16 @@
 
 <div class="actions-bar">
   <button class="success" id="btnGenerate">Generate JSON</button>
-  <button id="btnPrintInvoice">Print</button>
+  <button class="primary" id="btnPrintInvoice">🖨️ Print</button>
   <button id="btnLoadSample">Load sample invoice</button>
   <button id="btnReset">Reset</button>
+  <button class="icon-btn" id="btnExportData" title="Export data — save everything you've filled in as a file" aria-label="Export data">
+    <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M12 11v7"/><path d="M9 15l3 3 3-3"/></svg>
+  </button>
+  <button class="icon-btn" id="btnImportData" title="Import data — reload a file previously saved with Export" aria-label="Import data">
+    <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M12 18v-7"/><path d="M9 14l3-3 3 3"/></svg>
+  </button>
+  <input type="file" id="importDataInput" accept="application/json,.json" style="display:none;">
   <span id="statusMsg" style="font-size:13px;color:var(--muted);"></span>
 </div>
 
@@ -418,6 +444,19 @@
   <option value="61"><option value="65"><option value="71"><option value="72"><option value="89">
   <option value="96"><option value="142"><option value="160"><option value="204"><option value="290">
 </datalist>
+
+<!-- PRINT CHOICE MODAL -->
+<div class="modal-overlay hidden" id="printChoiceOverlay">
+  <div class="modal" style="width:min(360px,92vw);text-align:center;">
+    <h3 style="margin-bottom:4px;">Print Invoice</h3>
+    <p class="muted-note" style="margin-top:0;">Which version do you want to print?</p>
+    <div style="display:flex;flex-direction:column;gap:10px;margin-top:16px;">
+      <button class="primary" id="btnPrintProforma" style="justify-content:center;">Proforma Invoice</button>
+      <button class="success" id="btnPrintFinal" style="justify-content:center;">Tax Invoice (Final)</button>
+      <button id="btnPrintChoiceCancel" style="justify-content:center;">Cancel</button>
+    </div>
+  </div>
+</div>
 
 <!-- SELLER PROFILE MODAL -->
 <div class="modal-overlay hidden" id="sellerModalOverlay">
@@ -554,7 +593,10 @@ function attachAutocomplete(input, getItems, onSelect) {
     const matches = list.filter((it) => !q || it.label.toLowerCase().includes(q) || it.value.toLowerCase().includes(q));
     if (matches.length === 0) { box.classList.add("hidden"); return; }
     box.innerHTML = "";
-    matches.slice(0, 20).forEach((it) => {
+    // No slice/cap here — the box scrolls (see .suggest-box max-height in
+    // CSS), so every match should be listed, not just the first 20. That
+    // cap was hiding buyers past "M" or so once the list grew past 20.
+    matches.forEach((it) => {
       const row = document.createElement("div");
       row.className = "suggest-item";
       row.textContent = it.label;
@@ -638,6 +680,14 @@ function fmtDateToday() {
 function panFromGstin(gstin) {
   const g = (gstin || "").trim().toUpperCase();
   return /^[0-9]{2}[0-9A-Z]{10}/.test(g) ? g.slice(2, 12) : "";
+}
+
+// Looks up a state's display name from its 2-digit GST state code (MASTER.states
+// entries are [name, code] pairs) — used for the Delivery line, which should
+// read "GOODS SOLD & DELIVERED AT <STATE>", not the city.
+function stateNameFromCode(code) {
+  const found = (MASTER.states || []).find((s) => String(s[1]) === String(code || ""));
+  return found ? found[0] : "";
 }
 
 // Converts a non-negative number to words using the Indian numbering system
@@ -1154,6 +1204,322 @@ const SEED_BUYERS = [
     state: "27",
     phone: "9870030249",
     email: ""
+  },
+  // -- 21 buyers extracted from "INV-01 TILL 14.xlsx" and "INV-01.04.2025-------.xlsx" --
+  {
+    id: "gehna_by_luthra_jewels_punjab",
+    name: "Gehna By Luthra Jewels",
+    gstin: "03ABHPL0108N1ZX",
+    legalName: "Gehna By Luthra Jewels",
+    tradeName: "",
+    pos: "03",
+    addr1: "B8/530, Gehna By Luthra Jewels",
+    addr2: "Nehru Gate, Batala, Gurdaspur",
+    loc: "Batala, Gurdaspur",
+    pin: "143505",
+    state: "03",
+    phone: "",
+    email: ""
+  },
+  {
+    id: "wondercut_jewels_pvt_ltd",
+    name: "Wondercut Jewels Pvt Ltd",
+    gstin: "24AAACW9788Q1Z8",
+    legalName: "Wondercut Jewels Pvt Ltd",
+    tradeName: "",
+    pos: "24",
+    addr1: "Room No-302A, 3rd Floor, Lalita Estate K",
+    addr2: "Nandu Doshi Ni Wadi, Vasta Devi Road, Katargam",
+    loc: "Surat",
+    pin: "395004",
+    state: "24",
+    phone: "2612532030",
+    email: ""
+  },
+  {
+    id: "h_r_impex",
+    name: "H R Impex",
+    gstin: "24AAKFH0084P1Z2",
+    legalName: "H R Impex",
+    tradeName: "",
+    pos: "24",
+    addr1: "34, Krink Tower, Varachha Road",
+    addr2: "Near Mini Bazar, Varachha",
+    loc: "Surat",
+    pin: "395006",
+    state: "24",
+    phone: "9537765264",
+    email: ""
+  },
+  {
+    id: "ria_jewels",
+    name: "Ria Jewels",
+    gstin: "24AAWFS5230J1ZT",
+    legalName: "Ria Jewels",
+    tradeName: "",
+    pos: "24",
+    addr1: "234, Diamond Village",
+    addr2: "Jadakhadi, Mahidharpura",
+    loc: "Surat",
+    pin: "395003",
+    state: "24",
+    phone: "9714788194",
+    email: ""
+  },
+  {
+    id: "amrut_gems",
+    name: "Amrut Gems",
+    gstin: "24ACKPP4470D1ZO",
+    legalName: "Amrut Gems",
+    tradeName: "",
+    pos: "24",
+    addr1: "2nd Floor, 305, Navpad Commercial Co-Op Soc Ltd",
+    addr2: "Jadakhadi, Mahidharpura",
+    loc: "Surat",
+    pin: "395003",
+    state: "24",
+    phone: "",
+    email: ""
+  },
+  {
+    id: "muni_diam",
+    name: "Muni Diam",
+    gstin: "24AHRPD1047Q1Z1",
+    legalName: "Muni Diam",
+    tradeName: "",
+    pos: "24",
+    addr1: "Flat No-102, Shikhar Apt, Makanji Park",
+    addr2: "Nr Vivekanand Bridge, Adajan",
+    loc: "Surat",
+    pin: "395009",
+    state: "24",
+    phone: "",
+    email: ""
+  },
+  {
+    id: "orchid_diamond_jewellery",
+    name: "Orchid Diamond Jewellery",
+    gstin: "24ANDPS9954P1Z1",
+    legalName: "Orchid Diamond Jewellery",
+    tradeName: "",
+    pos: "24",
+    addr1: "2, Nandanvan Society, Part-1",
+    addr2: "B/s Sangeeta Apartment, Akota",
+    loc: "Vadodara",
+    pin: "390020",
+    state: "24",
+    phone: "9867455888",
+    email: ""
+  },
+  {
+    id: "bhadra_solitaires",
+    name: "Bhadra Solitaires",
+    gstin: "24LXFPS6973M1ZD",
+    legalName: "Bhadra Solitaires",
+    tradeName: "",
+    pos: "24",
+    addr1: "104, Ghandhi Diamond",
+    addr2: "Mahidharpura Shanti Main Road",
+    loc: "Surat",
+    pin: "395003",
+    state: "24",
+    phone: "8780767292",
+    email: ""
+  },
+  {
+    id: "dhanera_diamonds",
+    name: "Dhanera Diamonds",
+    gstin: "27AAAFD0634K1ZO",
+    legalName: "Dhanera Diamonds",
+    tradeName: "",
+    pos: "27",
+    addr1: "GW-5010, Bharat Diamond Bourse",
+    addr2: "Bandra Kurla Complex, Bandra East",
+    loc: "Mumbai Suburban",
+    pin: "400051",
+    state: "27",
+    phone: "",
+    email: ""
+  },
+  {
+    id: "aayush_diamond",
+    name: "Aayush Diamond",
+    gstin: "27AABPP4309A1Z7",
+    legalName: "Aayush Diamond",
+    tradeName: "",
+    pos: "27",
+    addr1: "1st Floor, Gala No 59, B Bldg",
+    addr2: "Kiran Industrial Estate, M G Road, Goregaon West",
+    loc: "Mumbai",
+    pin: "400062",
+    state: "27",
+    phone: "9821476637",
+    email: ""
+  },
+  {
+    id: "dhruvin_gems",
+    name: "Dhruvin Gems",
+    gstin: "27AAFFD7553G1ZC",
+    legalName: "Dhruvin Gems",
+    tradeName: "",
+    pos: "27",
+    addr1: "FW-15, Bharat Diamond Bourse, G Block",
+    addr2: "Bandra Kurla Complex, Bandra East",
+    loc: "Mumbai Suburban",
+    pin: "400051",
+    state: "27",
+    phone: "",
+    email: ""
+  },
+  {
+    id: "atul_babulal_shah_huf",
+    name: "Atul Babulal Shah-HUF",
+    gstin: "27AAFHS1615A1ZM",
+    legalName: "Atul Babulal Shah-HUF",
+    tradeName: "",
+    pos: "27",
+    addr1: "B-301, Sanidhya Building",
+    addr2: "Walkeshwar Road, Mumbai City",
+    loc: "Mumbai",
+    pin: "400006",
+    state: "27",
+    phone: "9820052423",
+    email: ""
+  },
+  {
+    id: "beyond_facets_private_limited",
+    name: "Beyond Facets Private Limited",
+    gstin: "27AAJCB5750G1ZL",
+    legalName: "Beyond Facets Private Limited",
+    tradeName: "",
+    pos: "27",
+    addr1: "207-209, Second Floor, Shreeji Diamond Industrial Estate",
+    addr2: "S N Dubey Road, Dahisar East",
+    loc: "Mumbai Suburban",
+    pin: "400068",
+    state: "27",
+    phone: "9820218852",
+    email: ""
+  },
+  {
+    id: "kia_gems_private_limited",
+    name: "Kia Gems Private Limited",
+    gstin: "27AAJCK2116M1ZD",
+    legalName: "Kia Gems Private Limited",
+    tradeName: "",
+    pos: "27",
+    addr1: "EW-5190, Bharat Diamond Bourse",
+    addr2: "Bandra Kurla Complex, Bandra East",
+    loc: "Mumbai Suburban",
+    pin: "400051",
+    state: "27",
+    phone: "9821257281",
+    email: ""
+  },
+  {
+    id: "necklace_diamond",
+    name: "Necklace Diamond",
+    gstin: "27AAJFN1645D1ZF",
+    legalName: "Necklace Diamond",
+    tradeName: "",
+    pos: "27",
+    addr1: "JW-7110, Bharat Diamond Bourse, G Block",
+    addr2: "Bandra Kurla Complex, Bandra East",
+    loc: "Mumbai Suburban",
+    pin: "400051",
+    state: "27",
+    phone: "",
+    email: ""
+  },
+  {
+    id: "sky_gem",
+    name: "Sky Gem",
+    gstin: "27AAYFS8765J1ZZ",
+    legalName: "Sky Gem",
+    tradeName: "",
+    pos: "27",
+    addr1: "CC-2081, Bharat Diamond Bourse",
+    addr2: "Bandra Kurla Complex, Bandra East",
+    loc: "Mumbai",
+    pin: "400051",
+    state: "27",
+    phone: "7030652015",
+    email: ""
+  },
+  {
+    id: "brilliant_impex",
+    name: "Brilliant Impex",
+    gstin: "27ABDFB8452D1ZK",
+    legalName: "Brilliant Impex",
+    tradeName: "",
+    pos: "27",
+    addr1: "3rd Floor, 302, Plot No-83, Anandi Building",
+    addr2: "Road No-4, Goregaon West",
+    loc: "Mumbai",
+    pin: "400104",
+    state: "27",
+    phone: "9768288575",
+    email: ""
+  },
+  {
+    id: "vraj_impex",
+    name: "Vraj Impex",
+    gstin: "27AECPD9972Q1ZQ",
+    legalName: "Vraj Impex",
+    tradeName: "",
+    pos: "27",
+    addr1: "CC-6012, Bharat Diamond Bourse, C Block",
+    addr2: "Bandra Kurla Complex, Bandra East",
+    loc: "Mumbai Suburban",
+    pin: "400051",
+    state: "27",
+    phone: "",
+    email: ""
+  },
+  {
+    id: "trupti_diamonds",
+    name: "Trupti Diamonds",
+    gstin: "27ANZPS5615D1ZG",
+    legalName: "Trupti Diamonds",
+    tradeName: "",
+    pos: "27",
+    addr1: "B-76/703, Shubham CHS Ltd",
+    addr2: "Shanti Park, Mira Road East",
+    loc: "Thane",
+    pin: "401107",
+    state: "27",
+    phone: "",
+    email: ""
+  },
+  {
+    id: "raj_impex",
+    name: "Raj Impex",
+    gstin: "27AUWPS1486Q1Z9",
+    legalName: "M/S Raj Impex",
+    tradeName: "",
+    pos: "27",
+    addr1: "FE-22, Bharat Diamond Bourse, G Block",
+    addr2: "Bandra Kurla Complex, Bandra East",
+    loc: "Mumbai",
+    pin: "400051",
+    state: "27",
+    phone: "8080998383",
+    email: ""
+  },
+  {
+    id: "prime_diam",
+    name: "Prime Diam",
+    gstin: "27AZYPS6166J1Z8",
+    legalName: "Prime Diam",
+    tradeName: "",
+    pos: "27",
+    addr1: "D-815, Veena Sitar CHS Ltd, Near IDFC Bank",
+    addr2: "Sec-1, Mahavir Nagar, Dahanukar Wadi, Kandivali West",
+    loc: "Mumbai City",
+    pin: "400067",
+    state: "27",
+    phone: "9322485829",
+    email: ""
   }
 ];
 
@@ -1245,34 +1611,66 @@ function selectBuyerById(id) {
   $("BState").value = b.state || "";
   $("BPh").value = b.phone || "";
   $("BEm").value = b.email || "";
-  // Delivery place defaults to the buyer's own city — matches how you've
-  // filled it in on real invoices ("GOODS SOLD & DELIVERED AT <city>").
-  // Still a plain text field, so it can be overwritten by hand afterwards.
+  // Delivery place defaults to the buyer's state (not city) — matches how
+  // you've filled it in on real invoices ("GOODS SOLD & DELIVERED AT
+  // <STATE>"). Still a plain text field, so it can be overwritten by hand.
   if ($("pDelivery")) {
-    $("pDelivery").value = b.loc ? ("GOODS SOLD & DELIVERED AT " + b.loc.toUpperCase()) : "";
+    const stName = stateNameFromCode(b.state);
+    $("pDelivery").value = stName ? ("GOODS SOLD & DELIVERED AT " + stName.toUpperCase()) : "";
   }
   document.querySelectorAll("#itemsBody tr").forEach(recalcItemRow);
 }
 
-// If Terms is COD, the due date is the same as the invoice date — keeps the
-// two fields in sync whenever either one changes.
+// Adds N days to a dd/mm/yyyy string, returning the same format.
+function addDaysToDMY(dmy, days) {
+  const m = String(dmy || "").match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+  if (!m) return "";
+  const d = new Date(Number(m[3]), Number(m[2]) - 1, Number(m[1]));
+  d.setDate(d.getDate() + days);
+  const p = (n) => String(n).padStart(2, "0");
+  return `${p(d.getDate())}/${p(d.getMonth() + 1)}/${d.getFullYear()}`;
+}
+
+// Keeps Due Date in sync with Terms + Date whenever either changes:
+//  - Terms = COD (the default) -> due date is the same as the invoice date.
+//  - Terms = a number of days (e.g. "2", "5", "15", "120 DAYS") -> due date
+//    is the invoice date plus that many days.
+//  - Anything else (custom text terms) -> left alone, user fills it manually.
 function syncDueDateWithTerms() {
-  const terms = ($("pTerms").value || "").trim().toUpperCase();
-  if (terms === "COD") {
-    $("pDueDate").value = $("DocDt").value || "";
+  const termsRaw = ($("pTerms").value || "").trim();
+  const terms = termsRaw.toUpperCase();
+  const docDt = $("DocDt").value || "";
+  if (!termsRaw || terms === "COD") {
+    $("pDueDate").value = docDt;
+    return;
+  }
+  const daysMatch = termsRaw.match(/^(\d+)/);
+  if (daysMatch && docDt) {
+    const due = addDaysToDMY(docDt, parseInt(daysMatch[1], 10));
+    if (due) $("pDueDate").value = due;
   }
 }
 
 function escapeHtml(s) { return String(s).replace(/[&<>"']/g, (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[m])); }
 
 // ---------- item rows ----------
+// Sl.No is always kept in plain sequential order (1, 2, 3, ...) based on a
+// row's actual position in the table — not a counter that only ever goes
+// up. That way deleting item 2 and adding a new one renumbers everything
+// back to 1, 2, 3 instead of jumping to 3.
 let itemCounter = 0;
+function renumberItems() {
+  document.querySelectorAll("#itemsBody tr").forEach((tr, i) => {
+    const el = tr.querySelector(".f-slno");
+    if (el) el.value = String(i + 1);
+  });
+}
 function addItemRow(prefill) {
   itemCounter++;
   const tr = document.createElement("tr");
   tr.innerHTML = `
     <td><input class="f-slno" value="${itemCounter}"></td>
-    <td><input class="f-desc" style="min-width:160px;" placeholder="Product / service description"></td>
+    <td><input class="f-desc" style="min-width:110px;" placeholder="Product / service description"></td>
     <td><input class="f-hsn" maxlength="8" placeholder="e.g. 71023910"></td>
     <td><input class="f-qty" type="number" step="0.001" value="1"></td>
     <td><select class="f-unit"></select></td>
@@ -1310,21 +1708,22 @@ function addItemRow(prefill) {
   ["f-qty", "f-price", "f-disc", "f-gstrate", "f-cessrate", "f-stcessrate"].forEach((cls) => {
     tr.querySelector("." + cls).addEventListener("input", recalc);
   });
-  tr.querySelector('[data-act="del"]').addEventListener("click", () => { tr.remove(); recalcAllTotals(); saveDraft(); });
+  tr.querySelector('[data-act="del"]').addEventListener("click", () => { tr.remove(); renumberItems(); recalcAllTotals(); saveDraft(); });
   tr.querySelector('[data-act="dup"]').addEventListener("click", () => {
     const clone = {};
     tr.querySelectorAll("input, select").forEach((el) => { if (el.className) clone[el.className] = el.value; });
-    clone["f-slno"] = String(itemCounter + 1);
     addItemRow(clone);
     saveDraft();
   });
 
   if (prefill) {
     Object.entries(prefill).forEach(([cls, v]) => {
+      if (cls === "f-slno") return; // always auto-numbered by position, never taken from prefill/duplicate/import
       const el = tr.querySelector("." + cls);
       if (el) el.value = v;
     });
   }
+  renumberItems();
   recalcItemRow(tr);
   return tr;
 }
@@ -1725,11 +2124,15 @@ const DOCNO_KEY = "einvoice_last_docno_v1";
 function suggestNextDocNo() {
   const last = (localStorage.getItem(DOCNO_KEY) || "").trim();
   if (!last) return "INV-0001";
-  const m = last.match(/(\d+)(\D*)$/);
+  // Increment the FIRST number group, not the last — real invoice numbers
+  // like "LS-19/2026-27" have the actual sequence number up front and a
+  // financial year at the end; incrementing the last group would bump the
+  // year ("...2026-28") instead of the invoice number ("LS-20/2026-27").
+  const m = last.match(/^(\D*)(\d+)([\s\S]*)$/);
   if (!m) return last;
-  const digits = m[1];
+  const prefix = m[1], digits = m[2], rest = m[3];
   const incremented = String(parseInt(digits, 10) + 1).padStart(digits.length, "0");
-  return last.slice(0, m.index) + incremented + m[2];
+  return prefix + incremented + rest;
 }
 
 // ---------- draft autosave / restore ----------
@@ -1796,6 +2199,74 @@ function restoreDraft() {
 
 function clearDraft() { localStorage.removeItem(DRAFT_KEY); }
 
+// ---------- export/import a filled-in invoice as its own file ----------
+// Unlike the silent autosave draft (which deliberately skips items and
+// buyer fields so a fresh page load starts clean), Export/Import is an
+// explicit save-and-resume: it captures everything, including items and
+// the selected buyer, into a downloadable file that can be re-uploaded
+// later — on this browser or a different one — to pick up exactly where
+// you left off.
+const BUYER_FIELD_IDS = ["BGstin", "BLglNm", "BTrdNm", "BPos", "BAddr1", "BAddr2", "BLoc", "BPin", "BState", "BPh", "BEm"];
+
+function exportDataFile() {
+  const snapshot = collectDraft();
+  snapshot.buyer = {};
+  BUYER_FIELD_IDS.forEach((id) => { const el = $(id); if (el) snapshot.buyer[id] = el.value; });
+  snapshot.buyerSearch = $("buyerSearch") ? $("buyerSearch").value : "";
+  snapshot.formatVersion = 1;
+  snapshot.exportedAt = new Date().toISOString();
+
+  const docNo = ($("DocNo").value.trim() || "invoice").replace(/[^a-zA-Z0-9-_]/g, "_");
+  const blob = new Blob([JSON.stringify(snapshot, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `einvoice_data_${docNo}.json`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+  $("statusMsg").textContent = "Data exported. Upload this file with \"Import data\" to continue later.";
+}
+
+function applyImportedSnapshot(snapshot) {
+  if (!snapshot || typeof snapshot !== "object") { alert("This doesn't look like a valid exported data file."); return; }
+
+  Object.entries(snapshot.fields || {}).forEach(([id, v]) => { const el = $(id); if (el) el.value = v; });
+  Object.entries(snapshot.checks || {}).forEach(([id, v]) => { const el = $(id); if (el) el.checked = v; });
+
+  if (snapshot.companyId) {
+    const wrap = $("companyToggle");
+    wrap.dataset.selected = snapshot.companyId;
+    [...wrap.children].forEach((el) => el.classList && el.classList.toggle("active", el.dataset.id === snapshot.companyId));
+    applySelectedCompany();
+  }
+  applySettings();
+
+  Object.entries(snapshot.buyer || {}).forEach(([id, v]) => { const el = $(id); if (el) el.value = v; });
+  if ($("buyerSearch")) $("buyerSearch").value = snapshot.buyerSearch || "";
+
+  $("itemsBody").innerHTML = "";
+  itemCounter = 0;
+  (snapshot.items || []).forEach((item) => addItemRow(item));
+  if (document.querySelectorAll("#itemsBody tr").length === 0) addItemRow();
+
+  recalcAllTotals();
+  saveDraft();
+  $("statusMsg").textContent = "Data imported from file.";
+}
+
+function importDataFile(file) {
+  const reader = new FileReader();
+  reader.onload = () => {
+    let snapshot;
+    try { snapshot = JSON.parse(reader.result); } catch (e) { alert("Couldn't read that file — it doesn't look like valid exported data."); return; }
+    applyImportedSnapshot(snapshot);
+  };
+  reader.onerror = () => alert("Couldn't read that file.");
+  reader.readAsText(file);
+}
+
 // ---------- printable invoice (separate from the machine-readable JSON) ----------
 // Shared HTML/number-formatting helpers used by both invoice templates below.
 const escP = (s) => String(s || "").replace(/[&<>"']/g, (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[m]));
@@ -1807,7 +2278,7 @@ const numAlwaysP = (v) => { const n = parseFloat(v) || 0; return n.toLocaleStrin
 // re-entered. Each company can have its own layout (see invoiceTemplate
 // below) since real letterheads differ invoice to invoice, business to
 // business.
-function gatherInvoiceData() {
+function gatherInvoiceData(isProforma) {
   const g = (id) => ($(id) ? ($(id).value || "").trim() : "");
   const companies = loadCompanies();
   const selectedId = $("companyToggle") ? $("companyToggle").dataset.selected : "";
@@ -1815,7 +2286,11 @@ function gatherInvoiceData() {
 
   const rows = [...document.querySelectorAll("#itemsBody tr")].map((tr, i) => {
     const gg = (c) => tr.querySelector("." + c).value;
-    return { sl: gg("f-slno") || String(i + 1), desc: gg("f-desc"), hsn: gg("f-hsn"), qty: gg("f-qty"), price: gg("f-price"), total: gg("f-total") };
+    // Note: "total" here is the pre-tax gross amount (qty x rate) for the
+    // printed row — GST is added separately further down the invoice (tax
+    // mini-table + grand total), so this must NOT be f-total (which is the
+    // tax-inclusive TotItemVal), or the row would double up the tax.
+    return { sl: gg("f-slno") || String(i + 1), desc: gg("f-desc"), hsn: gg("f-hsn"), qty: gg("f-qty"), price: gg("f-price"), total: gg("f-gross") };
   });
 
   const totalQty = rows.reduce((s, r) => s + (parseFloat(r.qty) || 0), 0);
@@ -1837,17 +2312,26 @@ function gatherInvoiceData() {
 
   const amountWords = numberToWordsIndian(Math.round(totInv)) + " Rupees Only";
 
-  return { g, company, rows, totalQty, totalAmt, stateName, sellerPan, buyerPan, hsnCode, sgst, cgst, igst, totInv, gstRate, halfRate, amountWords };
+  return { g, company, rows, totalQty, totalAmt, stateName, sellerPan, buyerPan, hsnCode, sgst, cgst, igst, totInv, gstRate, halfRate, amountWords, isProforma: !!isProforma };
 }
+
+// Shared markup/CSS for the diagonal "ESTIMATE" watermark shown across the
+// whole invoice when the Proforma option is chosen at print time — makes it
+// visually obvious this copy isn't the final tax invoice.
+const watermarkCss = `.watermark{position:fixed;top:45%;left:50%;transform:translate(-50%,-50%) rotate(-32deg);
+      font-size:78px;font-weight:800;letter-spacing:.15em;color:rgba(200,30,30,.13);
+      z-index:999;pointer-events:none;white-space:nowrap;font-family:Arial,Helvetica,sans-serif;}`;
+const watermarkHtml = (isProforma) => (isProforma ? `<div class="watermark">ESTIMATE</div>` : "");
 
 // ---- Vama Exports template (Tax Invoice layout) ----
 function renderVamaInvoiceHtml(d) {
-  const { g, company, rows, totalQty, totalAmt, stateName, sellerPan, buyerPan, hsnCode, sgst, cgst, igst, totInv, gstRate, halfRate, amountWords } = d;
+  const { g, company, rows, totalQty, totalAmt, stateName, sellerPan, buyerPan, hsnCode, sgst, cgst, igst, totInv, gstRate, halfRate, amountWords, isProforma } = d;
   const esc = escP, num = numP, numAlways = numAlwaysP;
+  const invTitle = isProforma ? "Proforma Invoice" : "Tax Invoice";
 
   const rowsHtml = rows.map((r) => `<tr>
       <td class="c">${esc(r.sl)}</td>
-      <td>${esc(r.desc)}</td>
+      <td>${esc(r.desc)}${r.hsn ? `<br><span class="hsn">HSN Code: ${esc(r.hsn)}</span>` : ""}</td>
       <td class="num">${esc(r.qty)}</td>
       <td class="num">${numAlways(r.price)}</td>
       <td class="num">${numAlways(r.total)}</td>
@@ -1876,6 +2360,7 @@ function renderVamaInvoiceHtml(d) {
     table.items td{padding:5px 8px;border-bottom:1px solid #e2e4ea;}
     table.items td.c{text-align:center;}
     table.items td.num, table.items th.num{text-align:right;}
+    table.items .hsn{font-size:9px;color:#6b7280;}
     .totrow td{font-weight:700;border-top:1.5px solid #2b3a67;border-bottom:none;background:#f8f9fb;}
     .mid-grid{display:flex;border-top:1px solid #c7cbd6;page-break-inside:avoid;}
     .mid-grid > div{flex:1;padding:9px 14px;}
@@ -1890,19 +2375,20 @@ function renderVamaInvoiceHtml(d) {
     .grand-total .amt{font-size:15px;font-weight:700;color:#2b3a67;margin-top:4px;}
     .declaration{font-size:8px;color:#555;line-height:1.5;padding:8px 14px;border-top:1px solid #c7cbd6;page-break-inside:avoid;background:#fafbfc;}
     .sig-row{display:flex;border-top:1px solid #c7cbd6;page-break-inside:avoid;}
-    .sig-row > div{flex:1;padding:44px 14px 10px;}
+    .sig-row > div{flex:1;padding:16px 14px 10px;}
     .sig-row > div:first-child{border-right:1px solid #d7dae2;color:#555;}
     .sig-block{text-align:right;}
-    .sig-line{border-top:1px solid #999;margin:38px 0 4px 35%;}
+    .sig-line{border-top:1px solid #999;margin:95px 0 4px 30%;}
+    ${watermarkCss}
   </style></head><body>
+    ${watermarkHtml(isProforma)}
     <div class="letterhead-space"></div>
     <div class="inv-wrap">
-      <div class="inv-title">Tax Invoice</div>
+      <div class="inv-title">${esc(invTitle)}</div>
       <div class="inv-topgrid">
         <div>
           <div class="lbl">Bill To</div>
-          <div class="buyer-name">${esc(g("BLglNm") || g("BTrdNm"))}</div>
-          ${g("BTrdNm") && g("BTrdNm") !== g("BLglNm") ? `<div class="addr">${esc(g("BTrdNm"))}</div>` : ""}
+          <div class="buyer-name">${esc(g("BTrdNm") || g("BLglNm"))}</div>
           <div class="addr">${esc(g("BAddr1"))}${g("BAddr2") ? ", " + esc(g("BAddr2")) : ""}</div>
           <div class="addr">${esc(g("BLoc"))}${g("BPin") ? " - " + esc(g("BPin")) : ""}</div>
           <div class="kv"><span>PAN No</span><span>${esc(buyerPan)}</span></div>
@@ -1919,7 +2405,7 @@ function renderVamaInvoiceHtml(d) {
           <div class="kv"><span>Delivery</span><span>${esc(g("pDelivery"))}</span></div>
           <div class="kv"><span>GST No</span><span>${esc(g("SGstin"))}</span></div>
           <div class="kv"><span>PAN No</span><span>${esc(sellerPan)}</span></div>
-          <div class="kv"><span>HSN Code</span><span>${esc(hsnCode)}</span></div>
+          <div class="kv"><span>Email</span><span>${esc(g("SEm"))}</span></div>
         </div>
       </div>
 
@@ -1953,8 +2439,7 @@ function renderVamaInvoiceHtml(d) {
       <div class="pay-decl-grid">
         <div>
           <div class="lbl">Payment Instructions</div>
-          <div>A/C Name: ${esc(company.bankAccName || "")}</div>
-          <div>A/C No: ${esc(company.bankAccNo || "")}</div>
+          <div>A/C Name: ${esc(company.bankAccName || "")} &nbsp;&nbsp; A/C No: ${esc(company.bankAccNo || "")}</div>
           <div>IFSC No: ${esc(company.bankIfsc || "")}</div>
           <div>Bank Address: ${esc(company.bankAddress || "")}</div>
         </div>
@@ -2002,8 +2487,9 @@ function renderVamaInvoiceHtml(d) {
 // SUBTOTAL/CGST/SGST/IGST/TOTAL table, and the declaration paragraph
 // omits Vama's Russian-origin/WDC preamble.
 function renderDivineInvoiceHtml(d) {
-  const { g, company, rows, stateName, sellerPan, buyerPan, sgst, cgst, igst, totInv, gstRate, halfRate, amountWords } = d;
+  const { g, company, rows, stateName, sellerPan, buyerPan, sgst, cgst, igst, totInv, gstRate, halfRate, amountWords, isProforma } = d;
   const esc = escP, numAlways = numAlwaysP;
+  const invTitle = isProforma ? "Proforma Invoice" : "Tax Invoice";
   const subtotal = (parseFloat($("valAssVal").textContent) || 0);
 
   const rowsHtml = rows.map((r) => `<tr>
@@ -2054,19 +2540,20 @@ function renderDivineInvoiceHtml(d) {
     .grand-total .amt{font-size:15px;font-weight:700;color:#2b3a67;margin-top:4px;}
     .declaration{font-size:8px;color:#555;line-height:1.5;padding:8px 14px;border-top:1px solid #c7cbd6;page-break-inside:avoid;background:#fafbfc;}
     .sig-row{display:flex;border-top:1px solid #c7cbd6;page-break-inside:avoid;}
-    .sig-row > div{flex:1;padding:44px 14px 10px;}
+    .sig-row > div{flex:1;padding:16px 14px 10px;}
     .sig-row > div:first-child{border-right:1px solid #d7dae2;color:#555;}
     .sig-block{text-align:right;}
-    .sig-line{border-top:1px solid #999;margin:38px 0 4px 35%;}
+    .sig-line{border-top:1px solid #999;margin:95px 0 4px 30%;}
+    ${watermarkCss}
   </style></head><body>
+    ${watermarkHtml(isProforma)}
     <div class="letterhead-space"></div>
     <div class="inv-wrap">
-      <div class="inv-title">Tax Invoice</div>
+      <div class="inv-title">${esc(invTitle)}</div>
       <div class="inv-topgrid">
         <div>
           <div class="lbl">Bill To</div>
-          <div class="buyer-name">${esc(g("BLglNm") || g("BTrdNm"))}</div>
-          ${g("BTrdNm") && g("BTrdNm") !== g("BLglNm") ? `<div class="addr">${esc(g("BTrdNm"))}</div>` : ""}
+          <div class="buyer-name">${esc(g("BTrdNm") || g("BLglNm"))}</div>
           <div class="addr">${esc(g("BAddr1"))}${g("BAddr2") ? ", " + esc(g("BAddr2")) : ""}</div>
           <div class="addr">${esc(g("BLoc"))}${g("BPin") ? " - " + esc(g("BPin")) : ""}</div>
           <div class="kv"><span>PAN No</span><span>${esc(buyerPan)}</span></div>
@@ -2081,6 +2568,7 @@ function renderDivineInvoiceHtml(d) {
           <div class="kv strong"><span>Delivery</span><span>${esc(g("pDelivery"))}</span></div>
           <div class="kv"><span>PAN No</span><span>${esc(sellerPan)}</span></div>
           <div class="kv"><span>GST No</span><span>${esc(g("SGstin"))}</span></div>
+          <div class="kv"><span>Email</span><span>${esc(g("SEm"))}</span></div>
           <div class="kv"><span>State Code</span><span>${esc(g("SState"))}</span></div>
         </div>
       </div>
@@ -2116,10 +2604,9 @@ function renderDivineInvoiceHtml(d) {
       <div class="pay-decl-grid">
         <div>
           <div class="lbl">Payment Instructions</div>
-          <div>${esc(company.bankName || "")}</div>
+          <div>${esc(company.bankName || "")} &nbsp;&nbsp; IFSC: ${esc(company.bankIfsc || "")}</div>
           <div>${esc(company.bankAddress || "")}</div>
           <div>A/C No: ${esc(company.bankAccNo || "")}</div>
-          <div>IFSC No: ${esc(company.bankIfsc || "")}</div>
         </div>
         <div class="grand-total">
           <div class="lbl">Total Payable</div>
@@ -2154,13 +2641,13 @@ function renderDivineInvoiceHtml(d) {
   </body></html>`;
 }
 
-function buildPrintableInvoiceHtml() {
-  const data = gatherInvoiceData();
+function buildPrintableInvoiceHtml(isProforma) {
+  const data = gatherInvoiceData(isProforma);
   return data.company.invoiceTemplate === "divine" ? renderDivineInvoiceHtml(data) : renderVamaInvoiceHtml(data);
 }
 
-function printInvoice() {
-  const html = buildPrintableInvoiceHtml();
+function printInvoice(isProforma) {
+  const html = buildPrintableInvoiceHtml(isProforma);
   const w = window.open("", "_blank");
   if (!w) { alert("Please allow pop-ups for this page to print the invoice."); return; }
   w.document.open();
@@ -2168,6 +2655,28 @@ function printInvoice() {
   w.document.close();
   w.focus();
   setTimeout(() => { try { w.print(); } catch (e) { /* ignore */ } }, 300);
+}
+
+// Clicking "Print" no longer prints straight away — it first asks whether
+// this copy is a Proforma Invoice or the final Tax Invoice, since the two
+// need a different heading (and the Proforma copy gets an "ESTIMATE"
+// watermark so it can never be mistaken for the final tax invoice).
+function showPrintChoice() {
+  // Same validation as Generate JSON — catches missing/invalid required
+  // fields before printing, instead of silently printing an incomplete
+  // invoice. Errors show in the same red error box with per-field
+  // highlighting, so it's obvious exactly what's missing.
+  const errors = validateAll();
+  if (!showErrors(errors)) {
+    if ($("errorBox").scrollIntoView) $("errorBox").scrollIntoView({ behavior: "smooth", block: "center" });
+    return;
+  }
+  const overlay = $("printChoiceOverlay");
+  if (overlay) overlay.classList.remove("hidden");
+}
+function hidePrintChoice() {
+  const overlay = $("printChoiceOverlay");
+  if (overlay) overlay.classList.add("hidden");
 }
 
 // ---------- sample invoice ----------
@@ -2214,7 +2723,8 @@ function loadSampleInvoice() {
     $("BPos").value = otherCompany.state || "";
     $("BPh").value = otherCompany.phone || "";
     $("BEm").value = otherCompany.email || "";
-    $("pDelivery").value = otherCompany.loc ? ("GOODS SOLD & DELIVERED AT " + otherCompany.loc.toUpperCase()) : "";
+    const otherStateName = stateNameFromCode(otherCompany.state);
+    $("pDelivery").value = otherStateName ? ("GOODS SOLD & DELIVERED AT " + otherStateName.toUpperCase()) : "";
   }
 
   $("itemsBody").innerHTML = "";
@@ -2322,7 +2832,17 @@ document.addEventListener("DOMContentLoaded", () => {
     localStorage.setItem(DOCNO_KEY, $("DocNo").value.trim());
     $("statusMsg").textContent = "JSON downloaded.";
   });
-  $("btnPrintInvoice").addEventListener("click", printInvoice);
+  $("btnPrintInvoice").addEventListener("click", showPrintChoice);
+  $("btnExportData").addEventListener("click", exportDataFile);
+  $("btnImportData").addEventListener("click", () => $("importDataInput").click());
+  $("importDataInput").addEventListener("change", (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (file) importDataFile(file);
+    e.target.value = "";
+  });
+  $("btnPrintProforma").addEventListener("click", () => { hidePrintChoice(); printInvoice(true); });
+  $("btnPrintFinal").addEventListener("click", () => { hidePrintChoice(); printInvoice(false); });
+  $("btnPrintChoiceCancel").addEventListener("click", hidePrintChoice);
   $("btnLoadSample").addEventListener("click", () => { loadSampleInvoice(); saveDraft(); });
   $("btnReset").addEventListener("click", () => {
     if (!confirm("Start a new invoice? This clears the buyer and item list (your seller/company and settings stay as they are).")) return;
