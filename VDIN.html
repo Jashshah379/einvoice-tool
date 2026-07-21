@@ -998,8 +998,8 @@ function attachSuggestions(input, items, onSelect) {
       row.addEventListener("mousedown", (e) => {
         e.preventDefault();
         input.value = getValue(it);
-        box.classList.add("hidden");
         input.dispatchEvent(new Event("input", { bubbles: true }));
+        box.classList.add("hidden");
         if (onSelect) onSelect(it);
       });
       box.appendChild(row);
