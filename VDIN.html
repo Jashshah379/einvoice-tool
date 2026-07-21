@@ -2579,6 +2579,11 @@ function showErrors(errors) {
 
 // ---------- JSON building ----------
 function nullable(v) { return v === "" || v === undefined || v === null ? null : v; }
+// GST portal phone fields must match ^([0-9]{6,12})$ — no "+", spaces,
+// dashes, etc. Strips everything but digits so "+91 9820052423" style
+// entries (however the user typed or a saved contact stored them) still
+// pass, instead of rejecting the whole invoice at upload time.
+function digitsOnly(v) { const d = String(v || "").replace(/\D+/g, ""); return d === "" ? null : d; }
 function stateCodeOf(sel) { return $(sel).value ? String($(sel).value) : null; }
 
 function buildInvoiceJson() {
@@ -2607,7 +2612,7 @@ function buildInvoiceJson() {
     Loc: $("SLoc").value.trim(),
     Pin: parseInt($("SPin").value, 10) || 0,
     Stcd: stateCodeOf("SState"),
-    Ph: nullable($("SPh").value.trim()),
+    Ph: digitsOnly($("SPh").value.trim()),
     Em: nullable($("SEm").value.trim())
   };
 
@@ -2622,7 +2627,7 @@ function buildInvoiceJson() {
     Loc: $("BLoc").value.trim(),
     Pin: parseInt($("BPin").value, 10) || 0,
     Stcd: stateCodeOf("BState"),
-    Ph: nullable($("BPh").value.trim()),
+    Ph: digitsOnly($("BPh").value.trim()),
     Em: nullable($("BEm").value.trim())
   };
 
