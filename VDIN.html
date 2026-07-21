@@ -2123,11 +2123,28 @@ function addDaysToDMY(dmy, days) {
   const p = (n) => String(n).padStart(2, "0");
   return `${p(d.getDate())}/${p(d.getMonth() + 1)}/${d.getFullYear()}`;
 }
+function addMonthsToDMY(dmy, months) {
+  const m = String(dmy || "").match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+  if (!m) return "";
+  const d = new Date(Number(m[3]), Number(m[2]) - 1, Number(m[1]));
+  d.setMonth(d.getMonth() + months);
+  const p = (n) => String(n).padStart(2, "0");
+  return `${p(d.getDate())}/${p(d.getMonth() + 1)}/${d.getFullYear()}`;
+}
+function addYearsToDMY(dmy, years) {
+  const m = String(dmy || "").match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+  if (!m) return "";
+  const d = new Date(Number(m[3]), Number(m[2]) - 1, Number(m[1]));
+  d.setFullYear(d.getFullYear() + years);
+  const p = (n) => String(n).padStart(2, "0");
+  return `${p(d.getDate())}/${p(d.getMonth() + 1)}/${d.getFullYear()}`;
+}
 
 // Keeps Due Date in sync with Terms + Date whenever either changes:
 //  - Terms = COD (the default) -> due date is the same as the invoice date.
-//  - Terms = a number of days (e.g. "2", "5", "15", "120 DAYS") -> due date
-//    is the invoice date plus that many days.
+//  - Terms = a number of days/months/years (e.g. "2", "15 days",
+//    "2 months", "1 year") -> due date is the invoice date plus that
+//    amount, in whichever unit was written (days, if none was given).
 //  - Anything else (custom text terms) -> left alone, user fills it manually.
 function syncDueDateWithTerms() {
   const termsRaw = ($("pTerms").value || "").trim();
@@ -2137,11 +2154,23 @@ function syncDueDateWithTerms() {
     $("pDueDate").value = docDt;
     return;
   }
-  const daysMatch = termsRaw.match(/^(\d+)/);
-  if (daysMatch && docDt) {
-    const due = addDaysToDMY(docDt, parseInt(daysMatch[1], 10));
-    if (due) $("pDueDate").value = due;
+  // Pull out the first number anywhere in the text — covers "2 days",
+  // "Net 15", "Due in 30 days", "45D", etc., not just a leading digit.
+  const numMatch = termsRaw.match(/(\d+)/);
+  if (!numMatch || !docDt) return;
+  const amount = parseInt(numMatch[1], 10);
+  // Look for a unit word anywhere in the text (years/months take priority
+  // over days so "2 years" doesn't get misread via a stray "d").
+  const lower = termsRaw.toLowerCase();
+  let due;
+  if (/year|yr/.test(lower)) {
+    due = addYearsToDMY(docDt, amount);
+  } else if (/month|mo\b/.test(lower)) {
+    due = addMonthsToDMY(docDt, amount);
+  } else {
+    due = addDaysToDMY(docDt, amount);
   }
+  if (due) $("pDueDate").value = due;
 }
 
 function escapeHtml(s) { return String(s).replace(/[&<>"']/g, (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[m])); }
@@ -3049,46 +3078,49 @@ function renderVamaInvoiceHtml(d) {
 
   return `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Invoice ${esc(g("DocNo"))}</title>
   <style>
-    @page { margin: 22mm 18mm; size: A4; }
+    @page { margin: 20mm 16mm; size: A4; }
     *{box-sizing:border-box;}
     html,body{height:auto;}
-    body{font-family:Verdana,Geneva,Arial,Helvetica,sans-serif;color:#111;font-size:10.5px;font-weight:600;margin:0;line-height:1.45;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+    body{font-family:Verdana,Geneva,Arial,Helvetica,sans-serif;color:#111;font-size:11.5px;font-weight:600;margin:0;padding:24px 20px;line-height:1.55;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
     .letterhead-space{height:190px;}
-    .inv-wrap{border:1px solid #c7cbd6;}
-    .inv-title{text-align:center;font-family:Georgia,'Times New Roman',serif;font-weight:700;font-size:17px;letter-spacing:.12em;color:#111;padding:9px 0 8px;border-bottom:2px solid #111;}
-    .inv-topgrid{display:flex;page-break-inside:avoid;}
-    .inv-topgrid > div{flex:1;padding:9px 14px;}
-    .inv-topgrid > div:first-child{border-right:1px solid #d7dae2;}
-    .lbl{font-size:8.5px;font-weight:700;letter-spacing:.08em;color:#111;text-transform:uppercase;margin-bottom:4px;}
-    .buyer-name{font-size:12px;font-weight:700;color:#111;margin-bottom:2px;}
-    .addr{color:#111;margin-bottom:5px;}
-    .kv{display:flex;justify-content:space-between;gap:8px;padding:1.5px 0;border-bottom:1px dotted #e2e4ea;}
+    .inv-wrap{border:1.5px solid #111;}
+    .inv-title{text-align:center;font-family:Georgia,'Times New Roman',serif;font-weight:700;font-size:19px;letter-spacing:.14em;color:#fff;background:#5c1a28;padding:11px 0;}
+    .inv-topgrid{display:flex;border-bottom:1.5px solid #111;page-break-inside:avoid;}
+    .inv-topgrid > div{flex:1;padding:14px 20px;}
+    .inv-topgrid > div:first-child{border-right:1.5px solid #111;}
+    .lbl{font-size:9.5px;font-weight:700;letter-spacing:.1em;color:#5c1a28;text-transform:uppercase;margin-bottom:5px;}
+    .buyer-name{font-size:13.5px;font-weight:700;color:#111;margin-bottom:3px;}
+    .addr{color:#111;margin-bottom:6px;}
+    .kv{display:flex;justify-content:space-between;gap:8px;padding:2.5px 0;border-bottom:1px dotted #aaa;}
     .kv span:first-child{color:#111;}
-    .kv span:last-child{font-weight:600;text-align:right;}
-    table.items{width:100%;border-collapse:collapse;font-size:10px;border-top:1px solid #c7cbd6;page-break-inside:avoid;}
-    table.items th{background:#f3f4f8;color:#111;font-weight:700;font-size:9px;letter-spacing:.04em;text-transform:uppercase;padding:6px 8px;border-bottom:1.5px solid #111;text-align:left;}
-    table.items td{padding:5px 8px;border-bottom:1px solid #e2e4ea;}
+    .kv span:last-child{font-weight:700;text-align:right;}
+    table.items{width:100%;border-collapse:collapse;font-size:11px;page-break-inside:avoid;}
+    table.items th{background:#5c1a28;color:#fff;font-weight:700;font-size:10px;letter-spacing:.05em;text-transform:uppercase;padding:8px 10px;text-align:left;border-right:1px solid rgba(255,255,255,.3);}
+    table.items th:last-child{border-right:none;}
+    table.items td{padding:7px 10px;border-bottom:1px solid #ccc;border-right:1px solid #ccc;}
+    table.items td:last-child{border-right:none;}
+    table.items tbody tr:nth-child(even){background:#f7f3f1;}
     table.items td.c{text-align:center;}
     table.items td.num, table.items th.num{text-align:right;}
-    table.items .hsn{font-size:9px;color:#111;}
-    .totrow td{font-weight:700;border-top:1.5px solid #111;border-bottom:none;background:#f8f9fb;}
-    .mid-grid{display:flex;border-top:1px solid #c7cbd6;page-break-inside:avoid;}
-    .mid-grid > div{flex:1;padding:9px 14px;}
-    .mid-grid > div:first-child{border-right:1px solid #d7dae2;}
+    table.items .hsn{font-size:9.5px;color:#444;}
+    .totrow td{font-weight:700;border-top:1.5px solid #111;border-bottom:none;background:#eee3e0;}
+    .mid-grid{display:flex;border-top:1.5px solid #111;border-bottom:1.5px solid #111;page-break-inside:avoid;}
+    .mid-grid > div{flex:1;padding:14px 20px;}
+    .mid-grid > div:first-child{border-right:1.5px solid #111;}
     table.tax-mini{width:100%;border-collapse:collapse;}
-    table.tax-mini td{padding:1.5px 0;border:none;}
-    table.tax-mini td.amt{text-align:right;font-weight:600;}
-    .pay-decl-grid{display:flex;border-top:1px solid #c7cbd6;page-break-inside:avoid;}
-    .pay-decl-grid > div{flex:1;padding:9px 14px;}
-    .pay-decl-grid > div:first-child{border-right:1px solid #d7dae2;}
+    table.tax-mini td{padding:2px 0;border:none;}
+    table.tax-mini td.amt{text-align:right;font-weight:700;}
+    .pay-decl-grid{display:flex;border-bottom:1.5px solid #111;page-break-inside:avoid;}
+    .pay-decl-grid > div{flex:1;padding:14px 20px;}
+    .pay-decl-grid > div:first-child{border-right:1.5px solid #111;}
     .grand-total{text-align:right;}
-    .grand-total .amt{font-size:15px;font-weight:700;color:#111;margin-top:4px;}
-    .declaration{font-size:8px;color:#111;line-height:1.5;padding:8px 14px;border-top:1px solid #c7cbd6;page-break-inside:avoid;background:#fafbfc;}
-    .sig-row{display:flex;border-top:1px solid #c7cbd6;page-break-inside:avoid;}
-    .sig-row > div{flex:1;padding:16px 14px 10px;}
-    .sig-row > div:first-child{border-right:1px solid #d7dae2;color:#111;}
+    .grand-total .amt{font-size:19px;font-weight:700;color:#5c1a28;margin-top:6px;}
+    .declaration{font-size:9px;color:#111;line-height:1.65;padding:14px 20px;border-bottom:1.5px solid #111;page-break-inside:avoid;background:#faf8f6;}
+    .sig-row{display:flex;page-break-inside:avoid;}
+    .sig-row > div{flex:1;padding:20px 20px 16px;}
+    .sig-row > div:first-child{border-right:1.5px solid #111;color:#111;}
     .sig-block{text-align:right;}
-    .sig-line{border-top:1px solid #999;margin:95px 0 4px 30%;}
+    .sig-line{border-top:1px solid #999;margin:90px 0 4px 30%;}
     ${watermarkCss}
   </style></head><body>
     ${watermarkHtml(isProforma)}
@@ -3213,47 +3245,50 @@ function renderDivineInvoiceHtml(d) {
 
   return `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Invoice ${esc(g("DocNo"))}</title>
   <style>
-    @page { margin: 22mm 18mm; size: A4; }
+    @page { margin: 20mm 16mm; size: A4; }
     *{box-sizing:border-box;}
     html,body{height:auto;}
-    body{font-family:Verdana,Geneva,Arial,Helvetica,sans-serif;color:#111;font-size:10.5px;font-weight:600;margin:0;line-height:1.45;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+    body{font-family:Verdana,Geneva,Arial,Helvetica,sans-serif;color:#111;font-size:11.5px;font-weight:600;margin:0;padding:24px 20px;line-height:1.55;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
     .letterhead-space{height:190px;}
-    .inv-wrap{border:1px solid #c7cbd6;}
-    .inv-title{text-align:center;font-family:Georgia,'Times New Roman',serif;font-weight:700;font-size:17px;letter-spacing:.12em;color:#111;padding:9px 0 8px;border-bottom:2px solid #111;}
-    .inv-topgrid{display:flex;page-break-inside:avoid;}
-    .inv-topgrid > div{flex:1;padding:9px 14px;}
-    .inv-topgrid > div:first-child{border-right:1px solid #d7dae2;}
-    .lbl{font-size:8.5px;font-weight:700;letter-spacing:.08em;color:#111;text-transform:uppercase;margin-bottom:4px;}
-    .buyer-name{font-size:12px;font-weight:700;color:#111;margin-bottom:2px;}
-    .addr{color:#111;margin-bottom:5px;}
-    .kv{display:flex;justify-content:space-between;gap:8px;padding:1.5px 0;border-bottom:1px dotted #e2e4ea;}
+    .inv-wrap{border:1.5px solid #111;}
+    .inv-title{text-align:center;font-family:Georgia,'Times New Roman',serif;font-weight:700;font-size:19px;letter-spacing:.14em;color:#fff;background:#5c1a28;padding:11px 0;}
+    .inv-topgrid{display:flex;border-bottom:1.5px solid #111;page-break-inside:avoid;}
+    .inv-topgrid > div{flex:1;padding:14px 20px;}
+    .inv-topgrid > div:first-child{border-right:1.5px solid #111;}
+    .lbl{font-size:9.5px;font-weight:700;letter-spacing:.1em;color:#5c1a28;text-transform:uppercase;margin-bottom:5px;}
+    .buyer-name{font-size:13.5px;font-weight:700;color:#111;margin-bottom:3px;}
+    .addr{color:#111;margin-bottom:6px;}
+    .kv{display:flex;justify-content:space-between;gap:8px;padding:2.5px 0;border-bottom:1px dotted #aaa;}
     .kv span:first-child{color:#111;}
-    .kv span:last-child{font-weight:600;text-align:right;}
+    .kv span:last-child{font-weight:700;text-align:right;}
     .kv.strong span:last-child{font-weight:700;}
-    table.items{width:100%;border-collapse:collapse;font-size:10px;border-top:1px solid #c7cbd6;page-break-inside:avoid;}
-    table.items th{background:#f3f4f8;color:#111;font-weight:700;font-size:9px;letter-spacing:.04em;text-transform:uppercase;padding:6px 8px;border-bottom:1.5px solid #111;text-align:left;}
-    table.items td{padding:5px 8px;border-bottom:1px solid #e2e4ea;}
+    table.items{width:100%;border-collapse:collapse;font-size:11px;page-break-inside:avoid;}
+    table.items th{background:#5c1a28;color:#fff;font-weight:700;font-size:10px;letter-spacing:.05em;text-transform:uppercase;padding:8px 10px;text-align:left;border-right:1px solid rgba(255,255,255,.3);}
+    table.items th:last-child{border-right:none;}
+    table.items td{padding:7px 10px;border-bottom:1px solid #ccc;border-right:1px solid #ccc;}
+    table.items td:last-child{border-right:none;}
+    table.items tbody tr:nth-child(even){background:#f7f3f1;}
     table.items td.c{text-align:center;}
     table.items td.num, table.items th.num{text-align:right;}
-    table.items .hsn{font-size:9px;color:#111;}
-    .mid-grid{display:flex;border-top:1px solid #c7cbd6;page-break-inside:avoid;}
-    .mid-grid > div{flex:1;padding:9px 14px;}
-    .mid-grid > div:first-child{border-right:1px solid #d7dae2;}
+    table.items .hsn{font-size:9.5px;color:#444;}
+    .mid-grid{display:flex;border-top:1.5px solid #111;border-bottom:1.5px solid #111;page-break-inside:avoid;}
+    .mid-grid > div{flex:1;padding:14px 20px;}
+    .mid-grid > div:first-child{border-right:1.5px solid #111;}
     table.tax-mini{width:100%;border-collapse:collapse;}
-    table.tax-mini td{padding:1.5px 0;border:none;}
-    table.tax-mini td.amt{text-align:right;font-weight:600;}
-    table.tax-mini tr.total td{font-weight:700;border-top:1px solid #c7cbd6;padding-top:3px;color:#111;}
-    .pay-decl-grid{display:flex;border-top:1px solid #c7cbd6;page-break-inside:avoid;}
-    .pay-decl-grid > div{flex:1;padding:9px 14px;}
-    .pay-decl-grid > div:first-child{border-right:1px solid #d7dae2;}
+    table.tax-mini td{padding:2px 0;border:none;}
+    table.tax-mini td.amt{text-align:right;font-weight:700;}
+    table.tax-mini tr.total td{font-weight:700;border-top:1px solid #999;padding-top:4px;color:#111;}
+    .pay-decl-grid{display:flex;border-bottom:1.5px solid #111;page-break-inside:avoid;}
+    .pay-decl-grid > div{flex:1;padding:14px 20px;}
+    .pay-decl-grid > div:first-child{border-right:1.5px solid #111;}
     .grand-total{text-align:right;}
-    .grand-total .amt{font-size:15px;font-weight:700;color:#111;margin-top:4px;}
-    .declaration{font-size:8px;color:#111;line-height:1.5;padding:8px 14px;border-top:1px solid #c7cbd6;page-break-inside:avoid;background:#fafbfc;}
-    .sig-row{display:flex;border-top:1px solid #c7cbd6;page-break-inside:avoid;}
-    .sig-row > div{flex:1;padding:16px 14px 10px;}
-    .sig-row > div:first-child{border-right:1px solid #d7dae2;color:#111;}
+    .grand-total .amt{font-size:19px;font-weight:700;color:#5c1a28;margin-top:6px;}
+    .declaration{font-size:9px;color:#111;line-height:1.65;padding:14px 20px;border-bottom:1.5px solid #111;page-break-inside:avoid;background:#faf8f6;}
+    .sig-row{display:flex;page-break-inside:avoid;}
+    .sig-row > div{flex:1;padding:20px 20px 16px;}
+    .sig-row > div:first-child{border-right:1.5px solid #111;color:#111;}
     .sig-block{text-align:right;}
-    .sig-line{border-top:1px solid #999;margin:95px 0 4px 30%;}
+    .sig-line{border-top:1px solid #999;margin:90px 0 4px 30%;}
     ${watermarkCss}
   </style></head><body>
     ${watermarkHtml(isProforma)}
@@ -3640,13 +3675,28 @@ document.addEventListener("DOMContentLoaded", () => {
   $("btnPrintChoiceCancel").addEventListener("click", hidePrintChoice);
   $("btnLoadSample").addEventListener("click", () => { loadSampleInvoice(); saveDraft(); });
   $("btnReset").addEventListener("click", () => {
-    if (!confirm("Start a new invoice? This clears the buyer and item list (your seller/company and settings stay as they are).")) return;
+    if (!confirm("Start a new invoice? This clears the buyer, items, and all other invoice details (your seller/company profile and settings stay as they are).")) return;
     clearDraft();
     $("itemsBody").innerHTML = "";
     itemCounter = 0;
     ["BGstin", "BLglNm", "BTrdNm", "BAddr1", "BAddr2", "BLoc", "BPin", "BPh", "BEm"].forEach((id) => $(id).value = "");
     $("BPos").value = ""; $("BState").value = ""; $("buyerSearch").value = "";
     $("pDelivery").value = "";
+    $("pTerms").value = "";
+    // Dispatch / Shipping
+    ["DName", "DAddr1", "DAddr2", "DLoc", "DPin", "ShGstin", "ShLglNm", "ShTrdNm", "ShAddr1", "ShAddr2", "ShLoc", "ShPin"].forEach((id) => $(id).value = "");
+    $("DState").value = ""; $("ShState").value = "";
+    // Export details
+    ["ShipBNo", "ShipBDt", "Port"].forEach((id) => $(id).value = "");
+    $("RefClm").value = ""; $("ForCur").value = ""; $("CntCode").value = ""; $("ExpDuty").value = "0";
+    // E-way bill
+    ["TransId", "TransName", "TransDistance", "TransDocNo", "TransDocDt", "VehNo"].forEach((id) => $(id).value = "");
+    $("TransMode").value = ""; $("VehType").value = "";
+    // Reverse charge / e-commerce GSTIN
+    $("RegRev").value = ""; $("EcmGstin").value = "";
+    // Discount / other charges / round-off (and its auto-round highlight)
+    $("valDiscount").value = "0"; $("valOthChrg").value = "0"; $("valRoundOff").value = "0";
+    clearAutoRoundActive();
     $("DocNo").value = suggestNextDocNo();
     $("DocDt").value = fmtDateToday();
     syncDueDateWithTerms();
