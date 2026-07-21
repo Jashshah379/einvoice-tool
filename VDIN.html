@@ -1262,7 +1262,7 @@ const SEED_COMPANIES = [
     name: "Vama Exports",
     gstin: "27AABPS5401L1ZM",
     legalName: "VAMA EXPORTS",
-    tradeName: "CHETAN RASIKLAL SHAH",
+    tradeName: "VAMA EXPORTS",
     addr1: "FW4010, Bharat Diamond Bourse, Block G",
     addr2: "Bandra Kurla Complex, Bandra",
     loc: "Mumbai",
@@ -1285,7 +1285,7 @@ const SEED_COMPANIES = [
     id: "divine_jewels",
     name: "Divine Jewels",
     gstin: "27AAKHA3999N1ZH",
-    legalName: "AMIT K GANDHI HUF",
+    legalName: "DIVINE JEWELS",
     tradeName: "DIVINE JEWELS",
     addr1: "3rd Floor, 307, Hari Om CHS, New Chikhalwadi",
     addr2: "Tardeo, Grant Road West",
@@ -1331,6 +1331,27 @@ function loadCompanies() {
     }
   });
   if (changed) localStorage.setItem(COMPANY_KEY, JSON.stringify(list));
+
+  // One-time correction: Vama Exports' trade name was briefly seeded as the
+  // proprietor's name ("CHETAN RASIKLAL SHAH") instead of the business name.
+  // If a browser already saved that version, fix it in place so the
+  // e-invoice JSON's TrdNm shows "VAMA EXPORTS" like it should.
+  const vamaIdx = list.findIndex((c) => c.id === "vama_exports" && c.tradeName === "CHETAN RASIKLAL SHAH");
+  if (vamaIdx >= 0) {
+    list[vamaIdx].tradeName = "VAMA EXPORTS";
+    localStorage.setItem(COMPANY_KEY, JSON.stringify(list));
+  }
+
+  // Same correction for Divine Jewels — legal name was the HUF's name
+  // ("AMIT K GANDHI HUF") instead of the business name; fix any browser
+  // that already saved that version.
+  const divineIdx = list.findIndex((c) => c.id === "divine_jewels" && c.legalName === "AMIT K GANDHI HUF");
+  if (divineIdx >= 0) {
+    list[divineIdx].legalName = "DIVINE JEWELS";
+    list[divineIdx].tradeName = "DIVINE JEWELS";
+    localStorage.setItem(COMPANY_KEY, JSON.stringify(list));
+  }
+
   localStorage.setItem(SEED_FLAG_KEY, "1");
   return list;
 }
