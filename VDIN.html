@@ -2827,10 +2827,13 @@ const DRAFT_KEY = "einvoice_draft_v1";
 // Note: buyer fields (BGstin, BLglNm, etc.) are deliberately NOT included here.
 // The buyer picker should always start blank and force an explicit choice each
 // time the tool is opened, rather than silently remembering the last buyer used.
+// Seller fields (SGstin, SLglNm, STrdNm, etc.) are ALSO deliberately excluded —
+// they're fully derived from the selected company profile via
+// applySelectedCompany(), so a stale draft snapshot can never override a
+// correction made to the company profile itself (e.g. a fixed legal name).
 const DRAFT_FIELD_IDS = [
   "SupTyp", "DocTyp", "DocNo", "DocDt", "RegRev", "IgstOnIntra", "EcmGstin",
   "pTerms", "pDueDate", "pDelivery",
-  "SGstin", "SLglNm", "STrdNm", "SAddr1", "SAddr2", "SLoc", "SPin", "SState", "SPh", "SEm",
   "DName", "DAddr1", "DAddr2", "DLoc", "DPin", "DState",
   "ShGstin", "ShLglNm", "ShTrdNm", "ShAddr1", "ShAddr2", "ShLoc", "ShPin", "ShState",
   "valDiscount", "valOthChrg", "valRoundOff",
@@ -2867,7 +2870,11 @@ function restoreDraft() {
   const hasContent = (draft.fields && draft.fields.DocNo) || (draft.items || []).some((it) => it["f-desc"]);
   if (!hasContent) return false;
 
-  Object.entries(draft.fields || {}).forEach(([id, v]) => { const el = $(id); if (el) el.value = v; });
+  // Seller fields are intentionally skipped here even if an older saved
+  // draft still has them (from before these were excluded from autosave) —
+  // applySelectedCompany() below is the single source of truth for them.
+  const SELLER_DERIVED_IDS = new Set(["SGstin", "SLglNm", "STrdNm", "SAddr1", "SAddr2", "SLoc", "SPin", "SState", "SPh", "SEm"]);
+  Object.entries(draft.fields || {}).forEach(([id, v]) => { if (SELLER_DERIVED_IDS.has(id)) return; const el = $(id); if (el) el.value = v; });
   Object.entries(draft.checks || {}).forEach(([id, v]) => { const el = $(id); if (el) el.checked = v; });
   // Deliberately NOT restoring draft.items — every fresh page load should
   // start with a clean, empty item list, even if a previous unsaved session
