@@ -3078,49 +3078,47 @@ function renderVamaInvoiceHtml(d) {
 
   return `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Invoice ${esc(g("DocNo"))}</title>
   <style>
-    @page { margin: 20mm 16mm; size: A4; }
+    @page { margin: 15mm 14mm; size: A4; }
     *{box-sizing:border-box;}
     html,body{height:auto;}
-    body{font-family:Verdana,Geneva,Arial,Helvetica,sans-serif;color:#111;font-size:11.5px;font-weight:600;margin:0;padding:24px 20px;line-height:1.55;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+    body{font-family:Verdana,Geneva,Arial,Helvetica,sans-serif;color:#111;font-size:11px;font-weight:600;margin:0;padding:16px 14px;line-height:1.4;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
     .letterhead-space{height:190px;}
     .inv-wrap{border:1.5px solid #111;}
-    .inv-title{text-align:center;font-family:Georgia,'Times New Roman',serif;font-weight:700;font-size:19px;letter-spacing:.14em;color:#fff;background:#5c1a28;padding:11px 0;}
+    .inv-title{text-align:center;font-family:Georgia,'Times New Roman',serif;font-weight:700;font-size:16px;letter-spacing:.1em;color:#111;padding:7px 0;border-bottom:2px solid #111;}
     .inv-topgrid{display:flex;border-bottom:1.5px solid #111;page-break-inside:avoid;}
-    .inv-topgrid > div{flex:1;padding:14px 20px;}
+    .inv-topgrid > div{flex:1;padding:8px 16px;}
     .inv-topgrid > div:first-child{border-right:1.5px solid #111;}
-    .lbl{font-size:9.5px;font-weight:700;letter-spacing:.1em;color:#5c1a28;text-transform:uppercase;margin-bottom:5px;}
-    .buyer-name{font-size:13.5px;font-weight:700;color:#111;margin-bottom:3px;}
-    .addr{color:#111;margin-bottom:6px;}
-    .kv{display:flex;justify-content:space-between;gap:8px;padding:2.5px 0;border-bottom:1px dotted #aaa;}
+    .lbl{font-size:9px;font-weight:700;letter-spacing:.08em;color:#111;text-transform:uppercase;margin-bottom:3px;}
+    .buyer-name{font-size:12.5px;font-weight:700;color:#111;margin-bottom:2px;}
+    .addr{color:#111;margin-bottom:3px;}
+    .kv{display:flex;justify-content:space-between;gap:8px;padding:0.5px 0;border-bottom:1px dotted #999;}
     .kv span:first-child{color:#111;}
     .kv span:last-child{font-weight:700;text-align:right;}
-    table.items{width:100%;border-collapse:collapse;font-size:11px;page-break-inside:avoid;}
-    table.items th{background:#5c1a28;color:#fff;font-weight:700;font-size:10px;letter-spacing:.05em;text-transform:uppercase;padding:8px 10px;text-align:left;border-right:1px solid rgba(255,255,255,.3);}
-    table.items th:last-child{border-right:none;}
-    table.items td{padding:7px 10px;border-bottom:1px solid #ccc;border-right:1px solid #ccc;}
-    table.items td:last-child{border-right:none;}
-    table.items tbody tr:nth-child(even){background:#f7f3f1;}
+    table.items{width:100%;border-collapse:collapse;font-size:10.5px;page-break-inside:avoid;}
+    table.items th{background:#e8e8e8;color:#111;font-weight:700;font-size:9.5px;letter-spacing:.04em;text-transform:uppercase;padding:6px 8px;text-align:left;border:1px solid #333;}
+    table.items td{padding:5px 8px;border:1px solid #333;}
+    table.items tbody tr:nth-child(even){background:#f5f5f5;}
     table.items td.c{text-align:center;}
     table.items td.num, table.items th.num{text-align:right;}
-    table.items .hsn{font-size:9.5px;color:#444;}
-    .totrow td{font-weight:700;border-top:1.5px solid #111;border-bottom:none;background:#eee3e0;}
+    table.items .hsn{font-size:9px;color:#333;}
+    .totrow td{font-weight:700;background:#e8e8e8;}
     .mid-grid{display:flex;border-top:1.5px solid #111;border-bottom:1.5px solid #111;page-break-inside:avoid;}
-    .mid-grid > div{flex:1;padding:14px 20px;}
+    .mid-grid > div{flex:1;padding:8px 16px;}
     .mid-grid > div:first-child{border-right:1.5px solid #111;}
     table.tax-mini{width:100%;border-collapse:collapse;}
-    table.tax-mini td{padding:2px 0;border:none;}
+    table.tax-mini td{padding:1px 0;border:none;}
     table.tax-mini td.amt{text-align:right;font-weight:700;}
     .pay-decl-grid{display:flex;border-bottom:1.5px solid #111;page-break-inside:avoid;}
-    .pay-decl-grid > div{flex:1;padding:14px 20px;}
+    .pay-decl-grid > div{flex:1;padding:8px 16px;}
     .pay-decl-grid > div:first-child{border-right:1.5px solid #111;}
     .grand-total{text-align:right;}
-    .grand-total .amt{font-size:19px;font-weight:700;color:#5c1a28;margin-top:6px;}
-    .declaration{font-size:9px;color:#111;line-height:1.65;padding:14px 20px;border-bottom:1.5px solid #111;page-break-inside:avoid;background:#faf8f6;}
+    .grand-total .amt{font-size:16px;font-weight:700;color:#111;margin-top:3px;}
+    .declaration{font-size:7.5px;color:#111;line-height:1.4;padding:7px 16px;border-bottom:1.5px solid #111;page-break-inside:avoid;background:#fafafa;}
     .sig-row{display:flex;page-break-inside:avoid;}
-    .sig-row > div{flex:1;padding:20px 20px 16px;}
+    .sig-row > div{flex:1;padding:10px 16px 8px;}
     .sig-row > div:first-child{border-right:1.5px solid #111;color:#111;}
     .sig-block{text-align:right;}
-    .sig-line{border-top:1px solid #999;margin:90px 0 4px 30%;}
+    .sig-line{border-top:1px solid #999;margin:45px 0 4px 30%;}
     ${watermarkCss}
   </style></head><body>
     ${watermarkHtml(isProforma)}
@@ -3245,50 +3243,48 @@ function renderDivineInvoiceHtml(d) {
 
   return `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Invoice ${esc(g("DocNo"))}</title>
   <style>
-    @page { margin: 20mm 16mm; size: A4; }
+    @page { margin: 15mm 14mm; size: A4; }
     *{box-sizing:border-box;}
     html,body{height:auto;}
-    body{font-family:Verdana,Geneva,Arial,Helvetica,sans-serif;color:#111;font-size:11.5px;font-weight:600;margin:0;padding:24px 20px;line-height:1.55;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+    body{font-family:Verdana,Geneva,Arial,Helvetica,sans-serif;color:#111;font-size:11px;font-weight:600;margin:0;padding:16px 14px;line-height:1.4;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
     .letterhead-space{height:190px;}
     .inv-wrap{border:1.5px solid #111;}
-    .inv-title{text-align:center;font-family:Georgia,'Times New Roman',serif;font-weight:700;font-size:19px;letter-spacing:.14em;color:#fff;background:#5c1a28;padding:11px 0;}
+    .inv-title{text-align:center;font-family:Georgia,'Times New Roman',serif;font-weight:700;font-size:16px;letter-spacing:.1em;color:#111;padding:7px 0;border-bottom:2px solid #111;}
     .inv-topgrid{display:flex;border-bottom:1.5px solid #111;page-break-inside:avoid;}
-    .inv-topgrid > div{flex:1;padding:14px 20px;}
+    .inv-topgrid > div{flex:1;padding:8px 16px;}
     .inv-topgrid > div:first-child{border-right:1.5px solid #111;}
-    .lbl{font-size:9.5px;font-weight:700;letter-spacing:.1em;color:#5c1a28;text-transform:uppercase;margin-bottom:5px;}
-    .buyer-name{font-size:13.5px;font-weight:700;color:#111;margin-bottom:3px;}
-    .addr{color:#111;margin-bottom:6px;}
-    .kv{display:flex;justify-content:space-between;gap:8px;padding:2.5px 0;border-bottom:1px dotted #aaa;}
+    .lbl{font-size:9px;font-weight:700;letter-spacing:.08em;color:#111;text-transform:uppercase;margin-bottom:3px;}
+    .buyer-name{font-size:12.5px;font-weight:700;color:#111;margin-bottom:2px;}
+    .addr{color:#111;margin-bottom:3px;}
+    .kv{display:flex;justify-content:space-between;gap:8px;padding:0.5px 0;border-bottom:1px dotted #999;}
     .kv span:first-child{color:#111;}
     .kv span:last-child{font-weight:700;text-align:right;}
     .kv.strong span:last-child{font-weight:700;}
-    table.items{width:100%;border-collapse:collapse;font-size:11px;page-break-inside:avoid;}
-    table.items th{background:#5c1a28;color:#fff;font-weight:700;font-size:10px;letter-spacing:.05em;text-transform:uppercase;padding:8px 10px;text-align:left;border-right:1px solid rgba(255,255,255,.3);}
-    table.items th:last-child{border-right:none;}
-    table.items td{padding:7px 10px;border-bottom:1px solid #ccc;border-right:1px solid #ccc;}
-    table.items td:last-child{border-right:none;}
-    table.items tbody tr:nth-child(even){background:#f7f3f1;}
+    table.items{width:100%;border-collapse:collapse;font-size:10.5px;page-break-inside:avoid;}
+    table.items th{background:#e8e8e8;color:#111;font-weight:700;font-size:9.5px;letter-spacing:.04em;text-transform:uppercase;padding:6px 8px;text-align:left;border:1px solid #333;}
+    table.items td{padding:5px 8px;border:1px solid #333;}
+    table.items tbody tr:nth-child(even){background:#f5f5f5;}
     table.items td.c{text-align:center;}
     table.items td.num, table.items th.num{text-align:right;}
-    table.items .hsn{font-size:9.5px;color:#444;}
+    table.items .hsn{font-size:9px;color:#333;}
     .mid-grid{display:flex;border-top:1.5px solid #111;border-bottom:1.5px solid #111;page-break-inside:avoid;}
-    .mid-grid > div{flex:1;padding:14px 20px;}
+    .mid-grid > div{flex:1;padding:8px 16px;}
     .mid-grid > div:first-child{border-right:1.5px solid #111;}
     table.tax-mini{width:100%;border-collapse:collapse;}
-    table.tax-mini td{padding:2px 0;border:none;}
+    table.tax-mini td{padding:1px 0;border:none;}
     table.tax-mini td.amt{text-align:right;font-weight:700;}
-    table.tax-mini tr.total td{font-weight:700;border-top:1px solid #999;padding-top:4px;color:#111;}
+    table.tax-mini tr.total td{font-weight:700;border-top:1px solid #999;padding-top:3px;color:#111;}
     .pay-decl-grid{display:flex;border-bottom:1.5px solid #111;page-break-inside:avoid;}
-    .pay-decl-grid > div{flex:1;padding:14px 20px;}
+    .pay-decl-grid > div{flex:1;padding:8px 16px;}
     .pay-decl-grid > div:first-child{border-right:1.5px solid #111;}
     .grand-total{text-align:right;}
-    .grand-total .amt{font-size:19px;font-weight:700;color:#5c1a28;margin-top:6px;}
-    .declaration{font-size:9px;color:#111;line-height:1.65;padding:14px 20px;border-bottom:1.5px solid #111;page-break-inside:avoid;background:#faf8f6;}
+    .grand-total .amt{font-size:16px;font-weight:700;color:#111;margin-top:3px;}
+    .declaration{font-size:7.5px;color:#111;line-height:1.4;padding:7px 16px;border-bottom:1.5px solid #111;page-break-inside:avoid;background:#fafafa;}
     .sig-row{display:flex;page-break-inside:avoid;}
-    .sig-row > div{flex:1;padding:20px 20px 16px;}
+    .sig-row > div{flex:1;padding:10px 16px 8px;}
     .sig-row > div:first-child{border-right:1.5px solid #111;color:#111;}
     .sig-block{text-align:right;}
-    .sig-line{border-top:1px solid #999;margin:90px 0 4px 30%;}
+    .sig-line{border-top:1px solid #999;margin:45px 0 4px 30%;}
     ${watermarkCss}
   </style></head><body>
     ${watermarkHtml(isProforma)}
