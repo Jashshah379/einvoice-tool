@@ -1257,8 +1257,8 @@ const SEED_COMPANIES = [
     id: "vama_exports",
     name: "Vama Exports",
     gstin: "27AABPS5401L1ZM",
-    legalName: "CHETAN RASIKLAL SHAH",
-    tradeName: "VAMA EXPORTS",
+    legalName: "VAMA EXPORTS",
+    tradeName: "CHETAN RASIKLAL SHAH",
     addr1: "FW4010, Bharat Diamond Bourse, Block G",
     addr2: "Bandra Kurla Complex, Bandra",
     loc: "Mumbai",
@@ -1394,6 +1394,21 @@ const BUYER_SEED_DISMISSED_KEY = "einvoice_buyers_seed_dismissed_v1";
 // written into localStorage the first time this browser sees them, unless
 // the user has since deliberately deleted that buyer.
 const SEED_BUYERS = [
+  {
+    id: "padma_gems",
+    name: "Padma Gems",
+    gstin: "27AALFP5230G1Z8",
+    legalName: "PADMA GEMS",
+    tradeName: "",
+    pos: "27",
+    addr1: "DW-4051, Bharat Diamond Bourse,",
+    addr2: "BKC, Bandra East",
+    loc: "Mumbai",
+    pin: "400051",
+    state: "27",
+    phone: "",
+    email: ""
+  },
   {
     id: "gehna_by_luthra_jewels",
     name: "Gehna By Luthra Jewels",
@@ -2251,6 +2266,9 @@ function recalcItemRow(tr) {
 }
 
 function round2(n) { return Math.round((n + Number.EPSILON) * 100) / 100; }
+// GST portal JSON amounts are whole rupees (no paise) — matches the working
+// Excel-exported format, which rounds every monetary field to an integer.
+function round0(n) { return Math.round(n + Number.EPSILON); }
 
 function recalcAllTotals() {
   const rows = [...document.querySelectorAll("#itemsBody tr")];
@@ -2585,16 +2603,16 @@ function buildInvoiceJson() {
 
   recalcAllTotals();
   const valDtls = {
-    AssVal: round2(parseFloat($("valAssVal").textContent)),
-    IgstVal: round2(parseFloat($("valIgst").textContent)),
-    CgstVal: round2(parseFloat($("valCgst").textContent)),
-    SgstVal: round2(parseFloat($("valSgst").textContent)),
-    CesVal: round2(parseFloat($("valCess").textContent)),
-    StCesVal: round2(parseFloat($("valStCess").textContent)),
-    Discount: round2(parseFloat($("valDiscount").value) || 0),
-    OthChrg: round2(parseFloat($("valOthChrg").value) || 0),
-    RndOffAmt: round2(parseFloat($("valRoundOff").value) || 0),
-    TotInvVal: round2(parseFloat($("valTotInv").textContent))
+    AssVal: round0(parseFloat($("valAssVal").textContent)),
+    IgstVal: round0(parseFloat($("valIgst").textContent)),
+    CgstVal: round0(parseFloat($("valCgst").textContent)),
+    SgstVal: round0(parseFloat($("valSgst").textContent)),
+    CesVal: round0(parseFloat($("valCess").textContent)),
+    StCesVal: round0(parseFloat($("valStCess").textContent)),
+    Discount: round0(parseFloat($("valDiscount").value) || 0),
+    OthChrg: round0(parseFloat($("valOthChrg").value) || 0),
+    RndOffAmt: round0(parseFloat($("valRoundOff").value) || 0),
+    TotInvVal: round0(parseFloat($("valTotInv").textContent))
   };
 
   let expDtls;
@@ -2633,7 +2651,10 @@ function buildInvoiceJson() {
 
   const itemList = [...document.querySelectorAll("#itemsBody tr")].map((tr) => {
     const g = (cls) => tr.querySelector("." + cls).value.trim();
-    const n = (cls) => round2(parseFloat(tr.querySelector("." + cls).value) || 0);
+    // Money fields: whole rupees, matching the working GST-portal format.
+    const n = (cls) => round0(parseFloat(tr.querySelector("." + cls).value) || 0);
+    // Qty/UnitPrice/rate fields keep decimal precision.
+    const nd = (cls) => round2(parseFloat(tr.querySelector("." + cls).value) || 0);
     const batchAny = g("f-batchname") || g("f-batchexp") || g("f-batchwar");
 
     const item = {
@@ -2643,22 +2664,23 @@ function buildInvoiceJson() {
       HsnCd: g("f-hsn")
     };
     if (barcodeOn) item.Barcde = nullable(g("f-bar"));
-    item.Qty = n("f-qty");
-    if (freeQtyOn) item.FreeQty = n("f-freeqty");
+    item.Qty = nd("f-qty");
+    if (freeQtyOn) item.FreeQty = nd("f-freeqty");
     item.Unit = nullable(tr.querySelector(".f-unit").value);
-    item.UnitPrice = n("f-price");
+    item.UnitPrice = nd("f-price");
     item.TotAmt = n("f-gross");
     item.Discount = n("f-disc");
-    item.PreTaxVal = n("f-pretax");
+    // Matches the working Excel-exported format, which always sends 0 here.
+    item.PreTaxVal = 0;
     item.AssAmt = n("f-taxable");
-    item.GstRt = n("f-gstrate");
+    item.GstRt = nd("f-gstrate");
     item.IgstAmt = n("f-igst");
     item.CgstAmt = n("f-cgst");
     item.SgstAmt = n("f-sgst");
-    item.CesRt = n("f-cessrate");
+    item.CesRt = nd("f-cessrate");
     item.CesAmt = n("f-cessamt");
     item.CesNonAdvlAmt = n("f-cessnonadv");
-    item.StateCesRt = n("f-stcessrate");
+    item.StateCesRt = nd("f-stcessrate");
     item.StateCesAmt = n("f-stcessamt");
     item.StateCesNonAdvlAmt = n("f-stcessnonadv");
     item.OthChrg = n("f-othchrg");
@@ -2687,7 +2709,10 @@ function buildInvoiceJson() {
 
 function downloadJson(obj) {
   const docNo = ($("DocNo").value.trim() || "invoice").replace(/[^a-zA-Z0-9-_]/g, "_");
-  const blob = new Blob([JSON.stringify(obj, null, 2)], { type: "application/json" });
+  // GST portal's bulk-upload tool expects the root to be an array of
+  // invoices (List<Invoice> on their side), even for a single invoice —
+  // otherwise it throws a JSON conversion error at byte position 1.
+  const blob = new Blob([JSON.stringify([obj], null, 2)], { type: "application/json" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
