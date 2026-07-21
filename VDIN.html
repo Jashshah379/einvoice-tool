@@ -1332,21 +1332,22 @@ function loadCompanies() {
   });
   if (changed) localStorage.setItem(COMPANY_KEY, JSON.stringify(list));
 
-  // One-time correction: Vama Exports' trade name was briefly seeded as the
-  // proprietor's name ("CHETAN RASIKLAL SHAH") instead of the business name.
-  // If a browser already saved that version, fix it in place so the
-  // e-invoice JSON's TrdNm shows "VAMA EXPORTS" like it should.
-  const vamaIdx = list.findIndex((c) => c.id === "vama_exports" && c.tradeName === "CHETAN RASIKLAL SHAH");
-  if (vamaIdx >= 0) {
+  // Force-correct Vama Exports' and Divine Jewels' legal/trade names on
+  // every load, unconditionally — earlier corrections here only matched
+  // specific known-bad historical values (e.g. tradeName being the
+  // proprietor's name), which missed browsers whose saved copy predates
+  // that state entirely (e.g. legalName itself still wrong). Simpler and
+  // fully robust: just always enforce the correct values for these two
+  // known single-owner companies.
+  const vamaIdx = list.findIndex((c) => c.id === "vama_exports");
+  if (vamaIdx >= 0 && (list[vamaIdx].legalName !== "VAMA EXPORTS" || list[vamaIdx].tradeName !== "VAMA EXPORTS")) {
+    list[vamaIdx].legalName = "VAMA EXPORTS";
     list[vamaIdx].tradeName = "VAMA EXPORTS";
     localStorage.setItem(COMPANY_KEY, JSON.stringify(list));
   }
 
-  // Same correction for Divine Jewels — legal name was the HUF's name
-  // ("AMIT K GANDHI HUF") instead of the business name; fix any browser
-  // that already saved that version.
-  const divineIdx = list.findIndex((c) => c.id === "divine_jewels" && c.legalName === "AMIT K GANDHI HUF");
-  if (divineIdx >= 0) {
+  const divineIdx = list.findIndex((c) => c.id === "divine_jewels");
+  if (divineIdx >= 0 && (list[divineIdx].legalName !== "DIVINE JEWELS" || list[divineIdx].tradeName !== "DIVINE JEWELS")) {
     list[divineIdx].legalName = "DIVINE JEWELS";
     list[divineIdx].tradeName = "DIVINE JEWELS";
     localStorage.setItem(COMPANY_KEY, JSON.stringify(list));
@@ -3104,7 +3105,7 @@ function renderVamaInvoiceHtml(d) {
   const rowsHtml = rows.map((r) => `<tr>
       <td class="c">${esc(r.sl)}</td>
       <td>${esc(r.desc)}${r.hsn ? `<br><span class="hsn">HSN Code: ${esc(r.hsn)}</span>` : ""}</td>
-      <td class="num">${esc(r.qty)}</td>
+      <td class="num">${numAlways(r.qty)}</td>
       <td class="num">${numAlways(r.price)}</td>
       <td class="num">${numAlways(r.total)}</td>
     </tr>`).join("");
@@ -3119,7 +3120,7 @@ function renderVamaInvoiceHtml(d) {
     .inv-wrap{border:1.5px solid #111;}
     .inv-title{text-align:center;font-family:Georgia,'Times New Roman',serif;font-weight:700;font-size:16px;letter-spacing:.1em;color:#111;padding:7px 0;border-bottom:2px solid #111;}
     .inv-topgrid{display:flex;border-bottom:1.5px solid #111;page-break-inside:avoid;}
-    .inv-topgrid > div{flex:1;padding:8px 16px;}
+    .inv-topgrid > div{flex:1;min-width:0;padding:8px 16px;}
     .inv-topgrid > div:first-child{border-right:1.5px solid #111;}
     .lbl{font-size:9px;font-weight:700;letter-spacing:.08em;color:#111;text-transform:uppercase;margin-bottom:3px;}
     .buyer-name{font-size:12.5px;font-weight:700;color:#111;margin-bottom:2px;}
@@ -3136,13 +3137,13 @@ function renderVamaInvoiceHtml(d) {
     table.items .hsn{font-size:9px;color:#333;}
     .totrow td{font-weight:700;background:#e8e8e8;}
     .mid-grid{display:flex;border-top:1.5px solid #111;border-bottom:1.5px solid #111;page-break-inside:avoid;}
-    .mid-grid > div{flex:1;padding:8px 16px;}
+    .mid-grid > div{flex:1;min-width:0;padding:8px 16px;}
     .mid-grid > div:first-child{border-right:1.5px solid #111;}
-    table.tax-mini{width:100%;border-collapse:collapse;}
+    table.tax-mini{width:100%;table-layout:fixed;border-collapse:collapse;}
     table.tax-mini td{padding:1px 0;border:none;}
     table.tax-mini td.amt{text-align:right;font-weight:700;}
     .pay-decl-grid{display:flex;border-bottom:1.5px solid #111;page-break-inside:avoid;}
-    .pay-decl-grid > div{flex:1;padding:8px 16px;}
+    .pay-decl-grid > div{flex:1;min-width:0;padding:8px 16px;}
     .pay-decl-grid > div:first-child{border-right:1.5px solid #111;}
     .grand-total{text-align:right;}
     .grand-total .amt{font-size:16px;font-weight:700;color:#111;margin-top:3px;}
@@ -3269,7 +3270,7 @@ function renderDivineInvoiceHtml(d) {
       <td class="c">${esc(r.sl)}</td>
       <td>${esc(r.desc)}${r.hsn ? `<br><span class="hsn">HSN Code: ${esc(r.hsn)}</span>` : ""}</td>
       <td class="num"></td>
-      <td class="num">${esc(r.qty)}</td>
+      <td class="num">${numAlways(r.qty)}</td>
       <td class="num">${numAlways(r.price)}</td>
       <td class="num">${numAlways(r.total)}</td>
     </tr>`).join("");
@@ -3284,7 +3285,7 @@ function renderDivineInvoiceHtml(d) {
     .inv-wrap{border:1.5px solid #111;}
     .inv-title{text-align:center;font-family:Georgia,'Times New Roman',serif;font-weight:700;font-size:16px;letter-spacing:.1em;color:#111;padding:7px 0;border-bottom:2px solid #111;}
     .inv-topgrid{display:flex;border-bottom:1.5px solid #111;page-break-inside:avoid;}
-    .inv-topgrid > div{flex:1;padding:8px 16px;}
+    .inv-topgrid > div{flex:1;min-width:0;padding:8px 16px;}
     .inv-topgrid > div:first-child{border-right:1.5px solid #111;}
     .lbl{font-size:9px;font-weight:700;letter-spacing:.08em;color:#111;text-transform:uppercase;margin-bottom:3px;}
     .buyer-name{font-size:12.5px;font-weight:700;color:#111;margin-bottom:2px;}
@@ -3301,14 +3302,14 @@ function renderDivineInvoiceHtml(d) {
     table.items td.num, table.items th.num{text-align:right;}
     table.items .hsn{font-size:9px;color:#333;}
     .mid-grid{display:flex;border-top:1.5px solid #111;border-bottom:1.5px solid #111;page-break-inside:avoid;}
-    .mid-grid > div{flex:1;padding:8px 16px;}
+    .mid-grid > div{flex:1;min-width:0;padding:8px 16px;}
     .mid-grid > div:first-child{border-right:1.5px solid #111;}
-    table.tax-mini{width:100%;border-collapse:collapse;}
+    table.tax-mini{width:100%;table-layout:fixed;border-collapse:collapse;}
     table.tax-mini td{padding:1px 0;border:none;}
     table.tax-mini td.amt{text-align:right;font-weight:700;}
     table.tax-mini tr.total td{font-weight:700;border-top:1px solid #999;padding-top:3px;color:#111;}
     .pay-decl-grid{display:flex;border-bottom:1.5px solid #111;page-break-inside:avoid;}
-    .pay-decl-grid > div{flex:1;padding:8px 16px;}
+    .pay-decl-grid > div{flex:1;min-width:0;padding:8px 16px;}
     .pay-decl-grid > div:first-child{border-right:1.5px solid #111;}
     .grand-total{text-align:right;}
     .grand-total .amt{font-size:16px;font-weight:700;color:#111;margin-top:3px;}
