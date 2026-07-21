@@ -515,7 +515,8 @@
 <div class="modal-overlay hidden" id="sellerModalOverlay">
   <div class="modal">
     <h3>Seller Details <span class="pill on" id="sellerPill">from company profile</span></h3>
-    <p class="muted-note">Pulled from the company selected up top. Edit here if this invoice needs a one-off change (won't affect the saved profile).</p>
+    <p class="muted-note">Switch company here, or up top — both stay in sync. Edit fields below if this invoice needs a one-off change (won't affect the saved profile).</p>
+    <div class="company-toggle" id="sellerModalCompanyToggle" style="margin-bottom:14px;"></div>
     <div class="grid">
       <div class="field"><label>Seller GSTIN <span class="req">*</span></label><input id="SGstin" maxlength="15"><div class="err"></div></div>
       <div class="field"><label>Legal Name <span class="req">*</span></label><input id="SLglNm"><div class="err"></div></div>
@@ -1367,33 +1368,46 @@ function markSeedDismissed(id) {
 // there are only ever a couple of companies in practice, so a toggle is faster
 // than opening a select. $("companyToggle") holds the currently-selected id in
 // its data-selected attribute.
+// Two toggle groups exist — the header one and a matching one inside the
+// Seller Details popup — kept in sync via COMPANY_TOGGLE_IDS/selectCompany()
+// so switching company from either place updates both immediately.
+const COMPANY_TOGGLE_IDS = ["companyToggle", "sellerModalCompanyToggle"];
+function selectCompany(id) {
+  COMPANY_TOGGLE_IDS.forEach((wid) => {
+    const w = $(wid);
+    if (!w) return;
+    w.dataset.selected = id;
+    [...w.children].forEach((el) => el.classList && el.classList.toggle("active", el.dataset.id === id));
+  });
+  applySelectedCompany();
+  saveDraft();
+}
 function refreshCompanySelect() {
   const companies = loadCompanies();
-  const wrap = $("companyToggle");
-  const prev = wrap.dataset.selected || "";
-  wrap.innerHTML = "";
-  if (companies.length === 0) {
-    wrap.innerHTML = '<span class="hint" style="color:var(--muted);">No companies configured.</span>';
-    return;
-  }
-  companies.forEach((c) => {
-    const btn = document.createElement("button");
-    btn.type = "button";
-    btn.className = "company-toggle-btn";
-    btn.textContent = c.name || c.gstin;
-    btn.dataset.id = c.id;
-    btn.addEventListener("click", () => {
-      wrap.dataset.selected = c.id;
-      [...wrap.children].forEach((el) => el.classList && el.classList.toggle("active", el.dataset.id === c.id));
-      applySelectedCompany();
-      saveDraft();
+  const primary = $("companyToggle");
+  const prev = primary.dataset.selected || "";
+  const selected = companies.length === 0 ? "" : (companies.some((c) => c.id === prev) ? prev : companies[0].id);
+  COMPANY_TOGGLE_IDS.forEach((wid) => {
+    const wrap = $(wid);
+    if (!wrap) return;
+    wrap.innerHTML = "";
+    if (companies.length === 0) {
+      wrap.innerHTML = '<span class="hint" style="color:var(--muted);">No companies configured.</span>';
+      return;
+    }
+    companies.forEach((c) => {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "company-toggle-btn";
+      btn.textContent = c.name || c.gstin;
+      btn.dataset.id = c.id;
+      btn.addEventListener("click", () => selectCompany(c.id));
+      wrap.appendChild(btn);
     });
-    wrap.appendChild(btn);
+    wrap.dataset.selected = selected;
+    [...wrap.children].forEach((el) => el.classList && el.classList.toggle("active", el.dataset.id === selected));
   });
-  const selected = companies.some((c) => c.id === prev) ? prev : companies[0].id;
-  wrap.dataset.selected = selected;
-  [...wrap.children].forEach((el) => el.classList && el.classList.toggle("active", el.dataset.id === selected));
-  applySelectedCompany();
+  if (companies.length > 0) applySelectedCompany();
 }
 
 function applySelectedCompany() {
@@ -2882,9 +2896,12 @@ function restoreDraft() {
   // had items in progress. (Everything else — seller, settings, document
   // details — still restores as before.)
   if (draft.companyId) {
-    const wrap = $("companyToggle");
-    wrap.dataset.selected = draft.companyId;
-    [...wrap.children].forEach((el) => el.classList && el.classList.toggle("active", el.dataset.id === draft.companyId));
+    COMPANY_TOGGLE_IDS.forEach((wid) => {
+      const w = $(wid);
+      if (!w) return;
+      w.dataset.selected = draft.companyId;
+      [...w.children].forEach((el) => el.classList && el.classList.toggle("active", el.dataset.id === draft.companyId));
+    });
     applySelectedCompany();
   }
   applySettings();
@@ -2931,9 +2948,12 @@ function applyImportedSnapshot(snapshot) {
   Object.entries(snapshot.checks || {}).forEach(([id, v]) => { const el = $(id); if (el) el.checked = v; });
 
   if (snapshot.companyId) {
-    const wrap = $("companyToggle");
-    wrap.dataset.selected = snapshot.companyId;
-    [...wrap.children].forEach((el) => el.classList && el.classList.toggle("active", el.dataset.id === snapshot.companyId));
+    COMPANY_TOGGLE_IDS.forEach((wid) => {
+      const w = $(wid);
+      if (!w) return;
+      w.dataset.selected = snapshot.companyId;
+      [...w.children].forEach((el) => el.classList && el.classList.toggle("active", el.dataset.id === snapshot.companyId));
+    });
     applySelectedCompany();
   }
   applySettings();
@@ -3186,10 +3206,10 @@ function renderVamaInvoiceHtml(d) {
       <table class="items">
         <thead><tr>
           <th class="c" style="width:8%;">Sr. No</th>
-          <th>Description</th>
+          <th style="width:42%;">Description</th>
           <th class="num" style="width:14%;">Weight in Cts</th>
-          <th class="num" style="width:16%;">Rate per Cts</th>
-          <th class="num" style="width:16%;">Total Amount</th>
+          <th class="num" style="width:18%;">Rate per Cts</th>
+          <th class="num" style="width:18%;">Total Amount</th>
         </tr></thead>
         <tbody>${rowsHtml}
           <tr class="totrow"><td class="c"></td><td style="text-align:right;">TOTAL</td><td class="num">${numAlways(totalQty)}</td><td></td><td class="num">${numAlways(totalAmt)}</td></tr>
@@ -3351,11 +3371,11 @@ function renderDivineInvoiceHtml(d) {
       <table class="items">
         <thead><tr>
           <th class="c" style="width:7%;">Sr. No</th>
-          <th>Description</th>
-          <th class="num" style="width:11%;">Avg Pcs per Cts</th>
+          <th style="width:43%;">Description</th>
+          <th class="num" style="width:10%;">Avg Pcs per Cts</th>
           <th class="num" style="width:12%;">Weight in Cts</th>
-          <th class="num" style="width:14%;">Rate per Cts</th>
-          <th class="num" style="width:16%;">Total Amount (Rs)</th>
+          <th class="num" style="width:13%;">Rate per Cts</th>
+          <th class="num" style="width:15%;">Total Amount (Rs)</th>
         </tr></thead>
         <tbody>${rowsHtml}</tbody>
       </table>
